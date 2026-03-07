@@ -3,11 +3,12 @@ import Layout from './components/Layout';
 import Tambos from './pages/Tambos';
 import Checklists from './pages/Checklists';
 import Services from './pages/Services';
-import ServiceExecution from './pages/ServiceExecution';
 import TamboSettings from './pages/TamboSettings';
 import ChecklistEditor from './pages/ChecklistEditor';
 import Login from './pages/Login';
 import UserManagement from './pages/UserManagement';
+import ServicesHub from './pages/ServicesHub';
+import ServiceWorkflow from './pages/ServiceWorkflow';
 
 const ProtectedRoute = ({ children }) => {
   const user = localStorage.getItem('df_user');
@@ -54,7 +55,8 @@ function App() {
           <Route path="checklists/edit/:id" element={<ChecklistEditor />} />
 
           <Route path="services" element={<Services />} />
-          <Route path="service-execution/:tamboId" element={<ServiceExecution />} />
+          <Route path="services-hub" element={<ServicesHub />} />
+          <Route path="service-flow/:serviceId" element={<ServiceWorkflow />} />
 
           <Route path="settings" element={
             <AdminRoute>

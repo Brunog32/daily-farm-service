@@ -98,9 +98,6 @@ const Tambos = () => {
                                 </td>
                                 <td className="actions-col-td">
                                     <div className="actions-group-cell-right">
-                                        <button onClick={() => navigate(`/service-execution/${tambo.id}`)} className="icon-btn-pill start-btn-jm" title="Iniciar Nuevo Servicio">
-                                            <Play size={18} fill="currentColor" />
-                                        </button>
                                         <button onClick={() => openEditModal(tambo.id)} className="icon-btn-pill edit-btn-jm" title="Editar Configuración">
                                             <Edit size={18} strokeWidth={2} />
                                         </button>

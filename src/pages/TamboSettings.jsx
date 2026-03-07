@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Save, Plus, Trash2, MapPin, Loader2, User } from 'lucide-react';
+import { X, Save, MapPin, Loader2, User, Building2 } from 'lucide-react';
 import { doc, getDoc, addDoc, updateDoc, collection } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
@@ -12,20 +12,27 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
         name: '',
         location: '',
         owner: '',
-        features: []
     });
 
     useEffect(() => {
         if (id) {
             getDoc(doc(db, 'tambos', id)).then(snap => {
-                if (snap.exists()) setTambo({ id: snap.id, ...snap.data() });
+                if (snap.exists()) {
+                    const data = snap.data();
+                    setTambo({
+                        id: snap.id,
+                        name: data.name || '',
+                        location: data.location || '',
+                        owner: data.owner || ''
+                    });
+                }
                 setLoading(false);
             });
         }
     }, [id]);
 
     const handleSave = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         if (!tambo.name) return alert('El nombre es obligatorio');
         setSaving(true);
         try {
@@ -46,10 +53,6 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
         }
     };
 
-    const addFeature = () => {
-        setTambo({ ...tambo, features: [...(tambo.features || []), { name: '', value: '' }] });
-    };
-
     if (loading) return createPortal(
         <div className="modal-overlay animate-fade-in">
             <div className="modal-card-reborn flex flex-col items-center justify-center py-20 gap-4">
@@ -62,131 +65,97 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
 
     return createPortal(
         <div className="modal-overlay animate-fade-in" onClick={onClose}>
-            <div className="modal-card-reborn animate-slide-up !max-w-[800px] w-[95vw] overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <div className="modal-card-reborn animate-slide-up !max-w-[440px] w-full overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()}>
                 <button className="close-modal-btn" onClick={onClose}>
                     <X size={20} strokeWidth={2.5} />
                 </button>
 
-                <div className="mb-8">
-                    <h3 className="text-xl font-black text-slate-800">{id ? 'Editar Tambo' : 'Nuevo Tambo'}</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Detalles del Establecimiento</p>
+                <div className="mb-8 flex items-center gap-4 border-b border-slate-50 pb-6">
+                    <div className="flex items-center justify-center w-12 h-12 bg-[#5558fa15] text-[#5558fa] rounded-xl flex-shrink-0">
+                        <Building2 size={24} strokeWidth={2.5} />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight leading-none">{id ? 'Editar Tambo' : 'Nuevo Tambo'}</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5 line-clamp-1">Configuración del Establecimiento</p>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    {/* INFORMACIÓN GENERAL */}
-                    <div className="flex flex-col gap-6">
-                        <div className="input-group-jm">
-                            <label>Nombre Comercial</label>
-                            <div className="input-with-icon-jm">
-                                <input
-                                    type="text"
-                                    placeholder="Ej: Las Lilas II"
-                                    value={tambo.name}
-                                    onChange={e => setTambo({ ...tambo, name: e.target.value })}
-                                    required
-                                />
-                            </div>
-                        </div>
-                        <div className="input-group-jm">
-                            <label>Ubicación Geográfica</label>
-                            <div className="input-with-icon-jm">
-                                <MapPin size={18} />
-                                <input
-                                    type="text"
-                                    placeholder="Localidad, Provincia"
-                                    value={tambo.location}
-                                    onChange={e => setTambo({ ...tambo, location: e.target.value })}
-                                />
-                            </div>
-                        </div>
-                        <div className="input-group-jm">
-                            <label>Productor Responsable</label>
-                            <div className="input-with-icon-jm">
-                                <User size={18} />
-                                <input
-                                    type="text"
-                                    placeholder="Nombre Completo"
-                                    value={tambo.owner}
-                                    onChange={e => setTambo({ ...tambo, owner: e.target.value })}
-                                />
-                            </div>
+                <form onSubmit={handleSave} className="flex flex-col gap-5">
+                    <div className="input-group-jm">
+                        <label>Nombre</label>
+                        <div className="input-with-icon-jm">
+                            <Building2 size={18} />
+                            <input
+                                type="text"
+                                placeholder="..."
+                                value={tambo.name}
+                                onChange={e => setTambo({ ...tambo, name: e.target.value })}
+                                required
+                            />
                         </div>
                     </div>
 
-                    {/* CARACTERÍSTICAS TÉCNICAS */}
-                    <div className="flex flex-col gap-4">
-                        <div className="features-editor-area">
-                            <div className="flex flex-col gap-3">
-                                {tambo.features?.map((feat, idx) => (
-                                    <div key={idx} className="feature-edit-row flex gap-3 animate-fade-in group">
-                                        <input
-                                            type="text"
-                                            className="flex-1"
-                                            placeholder="Atributo"
-                                            value={feat.name}
-                                            onChange={e => {
-                                                const newFeat = [...tambo.features];
-                                                newFeat[idx].name = e.target.value;
-                                                setTambo({ ...tambo, features: newFeat });
-                                            }}
-                                        />
-                                        <input
-                                            type="text"
-                                            className="flex-1"
-                                            placeholder="Valor"
-                                            value={feat.value}
-                                            onChange={e => {
-                                                const newFeat = [...tambo.features];
-                                                newFeat[idx].value = e.target.value;
-                                                setTambo({ ...tambo, features: newFeat });
-                                            }}
-                                        />
-                                        <button type="button" className="w-12 h-12 rounded-xl bg-white border border-slate-100 text-red-100 hover:text-red-500 hover:bg-red-50 hover:border-red-100 transition-all flex items-center justify-center flex-shrink-0" onClick={() => {
-                                            setTambo({ ...tambo, features: tambo.features.filter((_, i) => i !== idx) });
-                                        }}>
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button type="button" className="btn-add-feature-jm" onClick={addFeature}>
-                                <Plus size={16} strokeWidth={3} />
-                                <span>Añadir Especificación</span>
-                            </button>
+                    <div className="input-group-jm">
+                        <label>Ubicación</label>
+                        <div className="input-with-icon-jm">
+                            <MapPin size={18} />
+                            <input
+                                type="text"
+                                placeholder="..."
+                                value={tambo.location}
+                                onChange={e => setTambo({ ...tambo, location: e.target.value })}
+                            />
                         </div>
+                    </div>
+
+                    <div className="input-group-jm">
+                        <label>Dueño</label>
+                        <div className="input-with-icon-jm">
+                            <User size={18} />
+                            <input
+                                type="text"
+                                placeholder="..."
+                                value={tambo.owner}
+                                onChange={e => setTambo({ ...tambo, owner: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="modal-actions-container">
+                        <button type="button" className="btn-action-modern btn-cancel" onClick={onClose}>Cancelar</button>
+                        <button type="submit" className="btn-action-modern btn-save" disabled={saving}>
+                            {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                            <span>{saving ? 'Guardando...' : 'Guardar'}</span>
+                        </button>
                     </div>
                 </form>
 
-                <div className="modal-actions-container !justify-end mt-12 pt-8 border-t border-slate-50">
-                    <button type="button" className="btn-secondary-jm !h-[44px] !px-8" onClick={onClose}>Cancelar</button>
-                    <button type="button" className="btn-primary-jm px-10 h-[44px] text-sm shadow-soft" onClick={handleSave} disabled={saving}>
-                        {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                        <span>{saving ? 'Guardando...' : 'Guardar'}</span>
-                    </button>
-                </div>
-
                 <style>{`
-                    .input-group-jm label { font-size: 10px; font-weight: 900; color: #bbb; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; margin-left: 4px; }
-                    .input-with-icon-jm { display: flex; align-items: center; gap: 12px; background: #fdfdfd; border: 2px solid #f2f2f2; border-radius: 12px; padding: 0 16px; height: 48px; transition: all 0.2s; color: #ccc; }
-                    .input-with-icon-jm:focus-within { border-color: #5558fa33; background: #fff; color: #5558fa; }
-                    .input-with-icon-jm input { flex: 1; border: none; background: transparent; outline: none; font-size: 0.9375rem; font-weight: 800; color: #111; height: 100%; }
+                    .input-group-jm label { font-size: 10px; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.12em; display: block; margin-bottom: 8px; margin-left: 4px; }
+                    .input-with-icon-jm { display: flex; align-items: center; gap: 12px; background: #fff; border: 1.5px solid #f1f5f9; border-radius: 14px; padding: 0 16px; height: 52px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); color: #cbd5e1; }
+                    .input-with-icon-jm:focus-within { border-color: #5558fa; background: #fff; color: #5558fa; box-shadow: 0 0 0 4px rgba(85, 88, 250, 0.08); }
+                    .input-with-icon-jm input { flex: 1; border: none; background: transparent; outline: none; font-size: 0.9375rem; font-weight: 700; color: #1e293b; height: 100%; }
+                    .input-with-icon-jm input::placeholder { color: #e2e8f0; font-weight: 500; }
                     
-                    .features-editor-area .feature-edit-row input { height: 48px; font-size: 0.8125rem; background: #fdfdfd; border: 2px solid #f2f2f2; border-radius: 12px; font-weight: 800; padding: 0 16px; outline: none; }
-                    .features-editor-area .feature-edit-row input:focus { background: #fff; border-color: #5558fa33; }
-                    .feature-edit-row .w-12.h-12 { width: 48px; height: 48px; border-radius: 12px; border-width: 2px; }
-
-                    .btn-add-feature-jm { width: 100%; margin-top: 24px; padding: 18px 0; display: flex; align-items: center; justify-content: center; gap: 12px; background: #fafafa; border: 2px dashed #eee; border-radius: 16px; color: #bbb; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; }
-                    .btn-add-feature-jm:hover { background: #fff; border-color: #5558fa33; color: #5558fa; }
-
-                    /* MODAL OVERRIDES FOR TAMBO SETTINGS */
-                    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex !important; align-items: center; justify-content: center; z-index: 9999; padding: 20px; transition: all 0.3s ease; }
-                    .modal-card-reborn { background: #fff; width: 100%; max-width: 440px; padding: 32px; border-radius: 24px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 1px solid #f2f2f2; z-index: 10000; }
-                    @keyframes slideUpFade { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-                    .animate-slide-up { animation: slideUpFade 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
-                    .close-modal-btn { position: absolute; top: 20px; right: 20px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fdfdfd; border: 1.5px solid #f2f2f2; color: #a1a1aa; cursor: pointer; transition: all 0.2s; }
-                    .close-modal-btn:hover { background: #f4f4f5; color: #111; transform: scale(1.05); }
-                    .modal-actions-container { display: flex; justify-content: center; margin-top: 32px; width: 100%; gap: 12px; }
+                    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex !important; align-items: center; justify-content: center; z-index: 9999; padding: 20px; transition: all 0.3s ease; }
+                    .modal-card-reborn { background: #fff; width: 100%; max-width: 440px; padding: 32px; border-radius: 28px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); border: 1px solid #f8fafc; z-index: 10000; }
+                    
+                    @keyframes slideUpFade { from { opacity: 0; transform: translateY(24px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+                    .animate-slide-up { animation: slideUpFade 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
+                    
+                    .close-modal-btn { position: absolute; top: 20px; right: 20px; width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid #f1f5f9; color: #94a3b8; cursor: pointer; transition: all 0.2s; z-index: 10; }
+                    .close-modal-btn:hover { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
+                    
+                    .modal-actions-container { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 32px; padding-top: 24px; border-top: 1.5px solid #f8fafc; }
+                    .btn-action-modern { flex: 1; height: 52px; border-radius: 14px; font-weight: 800; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border: none; }
+                    
+                    .btn-cancel { background: #f8fafc; color: #64748b; border: 1.5px solid #f1f5f9; }
+                    .btn-cancel:hover { background: #f1f5f9; color: #1e293b; border-color: #e2e8f0; }
+                    
+                    .btn-save { background: #111; color: #fff; box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.15); }
+                    .btn-save:hover { background: #000; transform: translateY(-2px); box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.25); }
+                    .btn-save:active { transform: translateY(0); }
+                    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
                 `}</style>
             </div>
         </div>,

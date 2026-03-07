@@ -10,10 +10,49 @@ const Checklist = ({ title, items, values, onChange }) => {
           const status = values[index] || null;
 
           if (isSubsection) {
+            // Lógica de "UNICA OPCION": Si es una subsección y lo que sigue es otra subsección o es el final,
+            // creamos un ítem virtual para que el usuario pueda verificar.
+            const nextItem = items[index + 1];
+            const isEmptySubsection = !nextItem || (typeof nextItem === 'string' && nextItem.trim().endsWith(':'));
+
             return (
-              <div key={index} className="checklist-subsection-header animate-fade-in shadow-soft">
-                <div className="subsection-accent" />
-                <span>{itemName}</span>
+              <div key={index} className="subsection-wrapper-refined">
+                <div className="checklist-subsection-header animate-fade-in shadow-soft">
+                  <div className="subsection-accent" />
+                  <span>{itemName}</span>
+                </div>
+                {isEmptySubsection && (
+                  <div className="checklist-item-row animate-fade-in !bg-[#fafafa] border-dashed">
+                    <div className="row-content-inner">
+                      <div className="row-number-pill">!</div>
+                      <span className="row-text-main !text-indigo-600">Único</span>
+                    </div>
+
+                    <div className="status-button-group-v2 !bg-white">
+                      <button
+                        className={`status-btn-compact ok ${status === 'ok' ? 'active' : ''}`}
+                        onClick={() => onChange(index, 'ok')}
+                        title="OK"
+                      >
+                        <Check size={18} strokeWidth={3} />
+                      </button>
+                      <button
+                        className={`status-btn-compact fail ${status === 'fail' ? 'active' : ''}`}
+                        onClick={() => onChange(index, 'fail')}
+                        title="FALLA"
+                      >
+                        <X size={18} strokeWidth={3} />
+                      </button>
+                      <button
+                        className={`status-btn-compact na ${status === 'na' ? 'active' : ''}`}
+                        onClick={() => onChange(index, 'na')}
+                        title="N/A"
+                      >
+                        <Minus size={18} strokeWidth={3} />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           }
@@ -92,7 +131,6 @@ const Checklist = ({ title, items, values, onChange }) => {
         .status-btn-compact:hover { background: #fff; color: #1e293b; }
         
         .status-btn-compact.ok.active { background: #10b981; color: #fff; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
-        .status-btn-compact.fail.active { background: #ef4444; color: #fff; box-shadow: 0 4px 129, 0.2); }
         .status-btn-compact.fail.active { background: #ef4444; color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
         .status-btn-compact.na.active { background: #64748b; color: #fff; box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2); }
       `}</style>

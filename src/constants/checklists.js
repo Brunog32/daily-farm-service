@@ -119,7 +119,7 @@ export const CHECKLIST_SECTIONS = {
                 "PARTE UNIDAD CONDENSADORA:",
                 "Forzador (según tambo)",
                 "Compresor",
-                "Valvulas de servicio de compresor",
+                "Valvulas de service de compresor",
                 "Presostato de alta - baja automatico",
                 "Presostato de alta automatico",
                 "Presostato de baja automatico",
@@ -248,7 +248,7 @@ export const CHECKLIST_SECTIONS = {
             ]
         }
     ],
-    MATERIALS: [
+    FIELD_SERVICE: [
         {
             id: "materiales",
             title: "Materiales en Service",
@@ -308,9 +308,7 @@ export const CHECKLIST_SECTIONS = {
                 "VACUOMETRO 100MM",
                 "TUBOS LED"
             ]
-        }
-    ],
-    FIELD_SERVICE: [
+        },
         {
             id: "service_tambo",
             title: "Service en Tambo",

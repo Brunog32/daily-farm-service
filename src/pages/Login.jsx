@@ -96,7 +96,7 @@ const Login = () => {
                         />
                     </div>
 
-                    <div className="input-field-login mt-6">
+                    <div className="input-field-login mt-4">
                         <div className="icon-side">
                             <Lock size={20} />
                         </div>
@@ -109,7 +109,7 @@ const Login = () => {
                         />
                     </div>
 
-                    <button className="btn-login-submit mt-10" type="submit" disabled={loading}>
+                    <button className="btn-login-submit mt-8" type="submit" disabled={loading}>
                         {loading ? <Loader2 className="animate-spin" size={20} /> : (
                             <>
                                 <span>Ingresar</span>
@@ -118,7 +118,7 @@ const Login = () => {
                         )}
                     </button>
 
-                    <p className="footer-copyright mt-12 text-center">© 2026 OJ Service S.A. • Gestión Elite</p>
+                    <p className="footer-copyright mt-10 text-center">© 2026 OJ Service S.A. • Gestión Elite</p>
                 </form>
             </div>
 
@@ -133,7 +133,7 @@ const Login = () => {
 
                 .login-form-refined { padding: 56px; background: #fff; }
                 .form-head h2 { font-size: 1.75rem; font-weight: 900; color: #111; margin-bottom: 8px !important; letter-spacing: -0.04em; }
-                .form-head p { font-size: 0.9375rem; color: #bbb; font-weight: 600; margin-bottom: 40px !important; }
+                .form-head p { font-size: 0.9375rem; color: #bbb; font-weight: 600; margin-bottom: 32px !important; }
 
                 .error-badge-jm { background: #fff1f2; color: #e11d48; border-radius: 14px; padding: 14px; font-size: 13px; font-weight: 800; margin-bottom: 24px; text-align: center; border: 1.5px solid #ffe4e6; }
 
@@ -148,6 +148,14 @@ const Login = () => {
                 .btn-login-submit:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); background: #222; }
                 
                 .footer-copyright { text-align: center; font-size: 10px; font-weight: 800; color: #eee; letter-spacing: 0.5px; }
+
+                .mt-2 { margin-top: 8px; }
+                .mt-4 { margin-top: 16px; }
+                .mt-6 { margin-top: 24px; }
+                .mt-8 { margin-top: 32px; }
+                .mt-10 { margin-top: 40px; }
+                .mt-12 { margin-top: 48px; }
+                .text-center { text-align: center; }
             `}</style>
         </div>
     );

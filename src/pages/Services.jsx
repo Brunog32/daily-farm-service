@@ -1,22 +1,59 @@
 import { FileDown, Search, Filter, History, Calendar, X, ChevronDown, CloudUpload } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useServices } from '../hooks/useServices';
 import { useChecklists } from '../hooks/useChecklists';
 import { exportServiceToExcel, getServiceExcelBase64 } from '../utils/exporter';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 const Services = () => {
     const { services, loading } = useServices();
     const { checklists } = useChecklists();
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all'); // all, completed, draft
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [isUploading, setIsUploading] = useState(false);
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [usersMap, setUsersMap] = useState({});
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const snap = await getDocs(collection(db, 'users'));
+                const map = {};
+                snap.docs.forEach(doc => {
+                    const data = doc.data();
+                    if (data.username) {
+                        map[data.username.toLowerCase()] = {
+                            ...data,
+                            fullName: `${data.name} ${data.lastName}`
+                        };
+                    }
+                });
+                setUsersMap(map);
+            } catch (err) {
+                console.error('Error fetching users for map:', err);
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    useEffect(() => {
+        const handleStatus = () => setIsOnline(navigator.onLine);
+        window.addEventListener('online', handleStatus);
+        window.addEventListener('offline', handleStatus);
+        return () => {
+            window.removeEventListener('online', handleStatus);
+            window.removeEventListener('offline', handleStatus);
+        };
+    }, []);
 
     const handleDownload = async (service) => {
         try {
             if (!service) return;
-            await exportServiceToExcel(service, checklists);
+            const userData = usersMap[service.operator?.toLowerCase()];
+            const resolvedName = userData ? userData.fullName : service.operator;
+            await exportServiceToExcel(service, checklists, resolvedName);
         } catch (err) {
             console.error('Error in export:', err);
             alert('Error descargando el archivo Excel.');
@@ -27,9 +64,11 @@ const Services = () => {
         try {
             if (!service) return;
             const webAppUrl = 'https://script.google.com/macros/s/AKfycbzZMMisAcaqeNqlRZ5brjg4IP3XXSUBC-SPFUWKp7lo1hiZrQPlisMYHU2RFpv2tynP/exec';
+            const userData = usersMap[service.operator?.toLowerCase()];
+            const resolvedName = userData ? userData.fullName : service.operator;
 
             setIsUploading(true);
-            const { base64, filename } = await getServiceExcelBase64(service, checklists);
+            const { base64, filename } = await getServiceExcelBase64(service, checklists, resolvedName);
 
             const response = await fetch(webAppUrl, {
                 method: 'POST',
@@ -61,18 +100,19 @@ const Services = () => {
         // Búsqueda de texto
         if (searchTerm) {
             const lowSearch = searchTerm.toLowerCase();
-            result = result.filter(s =>
-                s.tamboName?.toLowerCase().includes(lowSearch) ||
-                s.id?.toLowerCase().includes(lowSearch) ||
-                s.operator?.toLowerCase().includes(lowSearch) ||
-                s.date?.includes(lowSearch)
-            );
+            result = result.filter(s => {
+                const userData = usersMap[s.operator?.toLowerCase()];
+                const operatorDisplay = userData ? userData.fullName : (s.operator || '');
+
+                return s.tamboName?.toLowerCase().includes(lowSearch) ||
+                    s.id?.toLowerCase().includes(lowSearch) ||
+                    operatorDisplay.toLowerCase().includes(lowSearch) ||
+                    s.date?.includes(lowSearch);
+            });
         }
 
-        // Filtro de Estado
-        if (statusFilter !== 'all') {
-            result = result.filter(s => s.status?.toLowerCase() === statusFilter.toLowerCase());
-        }
+        // Solo mostrar reportes que no sean "borrador" (por seguridad)
+        result = result.filter(s => s.status?.toLowerCase() !== 'borrador');
 
         // Filtro de Fecha (Rango)
         if (startDate && endDate) {
@@ -88,7 +128,7 @@ const Services = () => {
         }
 
         return result;
-    }, [services, searchTerm, statusFilter, startDate, endDate]);
+    }, [services, searchTerm, startDate, endDate]);
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center py-40 gap-4">
@@ -127,16 +167,6 @@ const Services = () => {
                 </div>
 
                 <div className="filters-secondary-row">
-                    <div className="select-pill-wrapper">
-                        <Filter size={16} className="text-slate-400" />
-                        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-                            <option value="all">Todos los Estados</option>
-                            <option value="completado">Completados</option>
-                            <option value="borrador">Borradores</option>
-                        </select>
-                        <ChevronDown size={14} className="chevron-custom" />
-                    </div>
-
                     <div className="date-range-pill">
                         <Calendar size={16} className="text-slate-400" />
                         <div className="date-inputs-group">
@@ -156,8 +186,8 @@ const Services = () => {
                         </div>
                     </div>
 
-                    {(searchTerm || statusFilter !== 'all' || startDate !== '' || endDate !== '') && (
-                        <button className="btn-clear-filters" onClick={() => { setSearchTerm(''); setStatusFilter('all'); setStartDate(''); setEndDate(''); }}>
+                    {(searchTerm || startDate !== '' || endDate !== '') && (
+                        <button className="btn-clear-filters" onClick={() => { setSearchTerm(''); setStartDate(''); setEndDate(''); }}>
                             <X size={16} strokeWidth={3} />
                         </button>
                     )}
@@ -169,10 +199,9 @@ const Services = () => {
                 <table className="tambos-styled-table">
                     <thead>
                         <tr>
-                            <th style={{ width: '25%' }}>Reporte Técnico</th>
-                            <th style={{ width: '25%' }}>Cronología</th>
-                            <th style={{ width: '20%' }}>Operador</th>
-                            <th style={{ width: '15%' }}>Estado</th>
+                            <th style={{ width: '30%' }}>Reporte Técnico</th>
+                            <th style={{ width: '30%' }}>Cronología</th>
+                            <th style={{ width: '25%' }}>Operador</th>
                             <th style={{ width: '15%' }} className="text-right pr-6">Acciones</th>
                         </tr>
                     </thead>
@@ -196,28 +225,40 @@ const Services = () => {
                                 </td>
                                 <td>
                                     <div className="user-name-wrapper">
-                                        <div className="user-avatar-circle" style={{ width: '32px', height: '32px', minWidth: '32px', fontSize: '10px' }}>
-                                            {service.operatorImg ? (
-                                                <img src={service.operatorImg} alt="Avatar" />
-                                            ) : (
-                                                (service.operator || 'T').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                                            )}
-                                        </div>
-                                        <div className="operator-cell text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                            {service.operator || 'TÉCNICO'}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div className={`status-chip-refined ${service.status === 'completado' ? 'done' : 'draft'}`}>
-                                        <div className="dot" />
-                                        <span>{service.status === 'completado' ? 'Completado' : 'Borrador'}</span>
+                                        {(() => {
+                                            const userData = usersMap[service.operator?.toLowerCase()];
+                                            const displayName = userData ? userData.fullName : (service.operator || 'TÉCNICO');
+                                            const displayImg = userData ? userData.img : null;
+
+                                            // Handle legacy data where image was in operatorImg
+                                            const finalImg = displayImg || service.operatorImg;
+
+                                            return (
+                                                <>
+                                                    <div className="user-avatar-circle" style={{ width: '32px', height: '32px', minWidth: '32px', fontSize: '10px' }}>
+                                                        {finalImg ? (
+                                                            <img src={finalImg} alt="Avatar" />
+                                                        ) : (
+                                                            displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                                                        )}
+                                                    </div>
+                                                    <div className="operator-cell text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                                        {displayName}
+                                                    </div>
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                 </td>
                                 <td>
                                     <div className="actions-group-cell-right">
 
-                                        <button className="icon-btn-pill upload-btn-jm" onClick={() => handleUploadToDrive(service)} title="Subir Excel a Google Drive" disabled={isUploading}>
+                                        <button
+                                            className={`icon-btn-pill upload-btn-jm ${!isOnline ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            onClick={() => isOnline && handleUploadToDrive(service)}
+                                            title={isOnline ? "Subir Excel a Google Drive" : "No disponible sin conexión"}
+                                            disabled={isUploading || !isOnline}
+                                        >
                                             <CloudUpload size={18} />
                                         </button>
                                         <button className="icon-btn-pill dl-btn-jm" onClick={() => handleDownload(service)} title="Descargar Excel">
@@ -229,7 +270,7 @@ const Services = () => {
                         ))}
                         {filteredServices.length === 0 && (
                             <tr>
-                                <td colSpan="5" className="empty-table-td">
+                                <td colSpan="4" className="empty-table-td">
                                     <div className="empty-state-visual">
                                         <div className="empty-icon-circle">
                                             <History size={48} strokeWidth={1} />
@@ -289,12 +330,6 @@ const Services = () => {
                 .chrono-time { font-size: 9px; font-weight: 800; color: #bbb; letter-spacing: 0.5px; margin-top: 2px; text-transform: uppercase; }
 
                 .operator-cell { font-weight: 800; color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; }
-
-                .status-chip-refined { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 10px; }
-                .status-chip-refined.done { background: #f0fdf4; color: #10b981; }
-                .status-chip-refined.draft { background: #fff7ed; color: #ea580c; }
-                .status-chip-refined .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-                .status-chip-refined span { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
 
                 .actions-group-cell-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
                 .icon-btn-pill { width: 38px; height: 38px; border-radius: 12px; border: 1.5px solid transparent; background: #f8f8f8; color: #999; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }

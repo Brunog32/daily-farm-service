@@ -9,8 +9,7 @@ const Checklists = () => {
     const getGroupLabel = (key) => {
         const labels = {
             PRE_SERVICE: 'Preparación Preliminar',
-            FIELD_SERVICE: 'Ejecución en Campo',
-            MATERIALS: 'Insumos y Materiales'
+            FIELD_SERVICE: 'Ejecución en Campo'
         };
         return labels[key] || key;
     };
@@ -35,7 +34,7 @@ const Checklists = () => {
 
 
             <div className="sections-container">
-                {['PRE_SERVICE', 'MATERIALS', 'FIELD_SERVICE'].map(groupKey => {
+                {['PRE_SERVICE', 'FIELD_SERVICE'].map(groupKey => {
                     const sections = groupedSections[groupKey] || [];
                     if (sections.length === 0) return null;
                     return (
@@ -62,7 +61,7 @@ const Checklists = () => {
                                             className="btn-edit-template-jm"
                                             onClick={() => navigate(`/checklists/edit/${section.id}`)}
                                         >
-                                            <span>Editar Protocolo</span>
+                                            <span>Editar Plantilla</span>
                                             <div className="chevron-circle-jm">
                                                 <ChevronRight size={14} strokeWidth={3} />
                                             </div>
@@ -77,8 +76,8 @@ const Checklists = () => {
                 {checklists.length === 0 && (
                     <div className="empty-checklists-state">
                         <Database size={48} className="text-slate-100 mb-6" />
-                        <h3 className="text-2xl font-black text-slate-800">Protocolos Vacíos</h3>
-                        <p className="text-slate-400 font-bold text-sm">No hay protocolos en la base de datos operativa.</p>
+                        <h3 className="text-2xl font-black text-slate-800">Plantillas Vacías</h3>
+                        <p className="text-slate-400 font-bold text-sm">No hay plantillas en la base de datos operativa.</p>
                         <button onClick={() => navigate('/settings')} className="btn-primary-jm mt-10">
                             Ir a Administración para Sincronizar
                         </button>

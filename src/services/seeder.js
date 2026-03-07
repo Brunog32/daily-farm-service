@@ -44,8 +44,7 @@ export const seedMasterChecklists = async () => {
 
         const flatSections = [
             ...CHECKLIST_SECTIONS.PRE_SERVICE.map(s => ({ ...s, group: 'PRE_SERVICE' })),
-            ...CHECKLIST_SECTIONS.FIELD_SERVICE.map(s => ({ ...s, group: 'FIELD_SERVICE' })),
-            ...CHECKLIST_SECTIONS.MATERIALS.map(s => ({ ...s, group: 'MATERIALS' }))
+            ...CHECKLIST_SECTIONS.FIELD_SERVICE.map(s => ({ ...s, group: 'FIELD_SERVICE' }))
         ];
 
         for (const section of flatSections) {
@@ -68,12 +67,9 @@ export const seedMasterChecklists = async () => {
  */
 export const resetChecklistsFromMaster = async () => {
     try {
-        // 1. Obtener los master
-        let masterSnap = await getDocs(collection(db, 'masterChecklists'));
-        if (masterSnap.empty) {
-            await seedMasterChecklists();
-            masterSnap = await getDocs(collection(db, 'masterChecklists'));
-        }
+        // 1. Forzar SIEMPRE resembrar el master para tomar cambios de constants
+        await seedMasterChecklists();
+        const masterSnap = await getDocs(collection(db, 'masterChecklists'));
 
         const masterData = masterSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 

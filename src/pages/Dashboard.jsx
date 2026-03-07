@@ -46,7 +46,7 @@ const Dashboard = () => {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                 <DashboardCard
-                    title="Servicios"
+                    title="Services"
                     value={servicesToday}
                     subtitle="Hoy"
                     icon={CheckCircle2}

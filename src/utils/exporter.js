@@ -2,21 +2,25 @@ import ExcelJS from 'exceljs';
 import { CHECKLIST_SECTIONS } from '../constants/checklists';
 
 /**
- * Genera un archivo XLSX robusto con múltiples hojas desde los datos del servicio.
+ * Genera un archivo XLSX robusto con múltiples hojas desde los datos del service.
  * Asegura que todas las secciones del sistema estén presentes como hojas, incluso si están vacías.
  * 
- * @param {Object} serviceData - Datos completos del servicio.
+ * @param {Object} serviceData - Datos completos del service.
  * @param {Array} allChecklists - (Opcional) Listado de plantillas desde la base de datos.
+ * @param {String} resolvedOperatorName - (Opcional) Nombre del operador ya resuelto (ej. nombre completo).
  */
 /**
  * Genera el archivo workbook instanciado de ExcelJS
  * @param {Object} serviceData
  * @param {Array} allChecklists
+ * @param {String} resolvedOperatorName
  * @returns {Workbook}
  */
-const generateServiceWorkbook = (serviceData, allChecklists = null) => {
+const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOperatorName = null) => {
     const workbook = new ExcelJS.Workbook();
     const summarySheet = workbook.addWorksheet('RESUMEN GENERAL');
+
+    const displayOperator = resolvedOperatorName || serviceData.operator;
 
     // Determinar el set de secciones a exportar. 
     // Si se pasan las de la BD se usan esas, de lo contrario las constantes.
@@ -26,7 +30,6 @@ const generateServiceWorkbook = (serviceData, allChecklists = null) => {
     } else {
         sectionsToExport = [
             ...CHECKLIST_SECTIONS.PRE_SERVICE.map(s => ({ ...s, group: 'PRE_SERVICE' })),
-            ...CHECKLIST_SECTIONS.MATERIALS.map(s => ({ ...s, group: 'MATERIALS' })),
             ...CHECKLIST_SECTIONS.FIELD_SERVICE.map(s => ({ ...s, group: 'FIELD_SERVICE' }))
         ];
     }
@@ -48,7 +51,7 @@ const generateServiceWorkbook = (serviceData, allChecklists = null) => {
 
     summarySheet.addRow([]);
     summarySheet.addRow(['ESTABLECIMIENTO:', serviceData.tamboName]);
-    summarySheet.addRow(['OPERADOR:', serviceData.operator]);
+    summarySheet.addRow(['OPERADOR:', displayOperator]);
     summarySheet.addRow(['FECHA:', serviceData.date]);
     summarySheet.addRow(['ID REPORTE:', serviceData.id]);
     summarySheet.addRow(['HORA INICIO:', serviceData.startTime]);
@@ -91,10 +94,11 @@ const generateServiceWorkbook = (serviceData, allChecklists = null) => {
         if (sectionInfo.items) {
             sectionInfo.items.forEach((item, index) => {
                 const label = typeof item === 'string' ? item : item.name;
-                const isSubsection = label.trim().endsWith(':');
+                const isSubsection = typeof item === 'string';
 
                 if (isSubsection) {
-                    const subRow = sectionSheet.addRow(['', label.toUpperCase(), '']);
+                    const displayLabel = label.trim().endsWith(':') ? label : `${label.trim()}:`;
+                    const subRow = sectionSheet.addRow(['', displayLabel.toUpperCase(), '']);
                     subRow.eachCell(cell => {
                         cell.font = { bold: true, size: 10, color: { argb: 'FF334155' } };
                         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
@@ -105,6 +109,22 @@ const generateServiceWorkbook = (serviceData, allChecklists = null) => {
                         };
                     });
                     subRow.height = 25;
+
+                    // Lógica UNICA OPCIÓN: Si la sección está vacía y tiene respuesta, la agregamos
+                    const nextItem = sectionInfo.items[index + 1];
+                    const isTrulyEmpty = !nextItem || typeof nextItem === 'string';
+
+                    if (isTrulyEmpty && responses[index] !== undefined) {
+                        const val = responses[index];
+                        const symbol = getStatusSymbol(val);
+                        const dRow = sectionSheet.addRow(['!', 'UNICA OPCIÓN', symbol.text]);
+                        const statusCell = dRow.getCell(3);
+                        statusCell.alignment = { horizontal: 'center' };
+                        statusCell.font = { bold: true, color: { argb: symbol.color } };
+                        dRow.eachCell(cell => {
+                            cell.border = { bottom: { style: 'thin', color: { argb: 'FFF0F0F0' } } };
+                        });
+                    }
                     return;
                 }
 
@@ -139,10 +159,10 @@ const generateServiceWorkbook = (serviceData, allChecklists = null) => {
 };
 
 /**
- * Genera y descarga directamente un archivo XLSX desde los datos del servicio.
+ * Genera y descarga directamente un archivo XLSX desde los datos del service.
  */
-export const exportServiceToExcel = async (serviceData, allChecklists = null) => {
-    const workbook = generateServiceWorkbook(serviceData, allChecklists);
+export const exportServiceToExcel = async (serviceData, allChecklists = null, resolvedOperatorName = null) => {
+    const workbook = generateServiceWorkbook(serviceData, allChecklists, resolvedOperatorName);
 
     // --- DESCARGA ---
     const buffer = await workbook.xlsx.writeBuffer();
@@ -160,8 +180,8 @@ export const exportServiceToExcel = async (serviceData, allChecklists = null) =>
 /**
  * Genera y codifica en Base64 el archivo Excel para subir a Drive u otra API.
  */
-export const getServiceExcelBase64 = async (serviceData, allChecklists = null) => {
-    const workbook = generateServiceWorkbook(serviceData, allChecklists);
+export const getServiceExcelBase64 = async (serviceData, allChecklists = null, resolvedOperatorName = null) => {
+    const workbook = generateServiceWorkbook(serviceData, allChecklists, resolvedOperatorName);
     const buffer = await workbook.xlsx.writeBuffer();
 
     // Convert ArrayBuffer to Base64

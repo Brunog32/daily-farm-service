@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ClipboardList, Factory, History, Settings, LogOut, Search, Bell, User, ChevronLeft } from 'lucide-react';
+import { ClipboardList, Factory, History, Settings, LogOut, Search, Bell, User, ChevronLeft, Play, Wifi, WifiOff } from 'lucide-react';
 import { Cow } from './Icons';
 import { useEffect, useState } from 'react';
 
@@ -7,6 +7,20 @@ const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem('df_user');
@@ -15,10 +29,17 @@ const Layout = () => {
     }
   }, [location]);
 
-  const isActive = (path) =>
-    location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
+  const isActive = (path) => {
+    if (path === '/services-hub') return location.pathname === '/services-hub' || location.pathname.startsWith('/service-flow');
+    if (path === '/services') return location.pathname === '/services';
+    return location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
+  };
 
   const handleLogout = () => {
+    if (!isOnline) {
+      alert('No puedes cerrar sesión sin conexión a internet. Los datos pendientes podrían perderse.');
+      return;
+    }
     localStorage.removeItem('df_user');
     navigate('/login');
   };
@@ -35,10 +56,11 @@ const Layout = () => {
 
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path.includes('/service-execution')) return 'Ejecución de Servicio';
+    if (path.includes('/service-execution') || path.includes('/service-flow')) return 'Ejecución de Service';
     if (path.startsWith('/tambos')) return 'Gestión de Tambos';
-    if (path.startsWith('/checklists')) return 'Protocolos de Checklist';
-    if (path.startsWith('/services')) return 'Historial de Servicios';
+    if (path.startsWith('/checklists')) return 'Plantillas';
+    if (path.startsWith('/services-hub')) return 'Services';
+    if (path.startsWith('/services')) return 'Historial de Services';
     if (path.startsWith('/settings')) return 'Administración';
     return 'Panel de Control';
   };
@@ -60,6 +82,7 @@ const Layout = () => {
         <nav className="sidebar-nav">
           <NavItem to="/tambos" icon={Factory} label="Establecimientos" />
           <NavItem to="/checklists" icon={ClipboardList} label="Plantillas" />
+          <NavItem to="/services-hub" icon={Play} label="Services" />
           <NavItem to="/services" icon={History} label="Historial" />
           <div className="divider" />
           {currentUser && currentUser.role === 'admin' && (
@@ -87,6 +110,12 @@ const Layout = () => {
           </div>
 
           <div className="header-right">
+            {!isOnline && (
+              <div className="offline-badge">
+                <WifiOff size={16} />
+                <span>Modo Offline</span>
+              </div>
+            )}
             <div id="header-portal-action"></div>
             <div className="user-area" style={{ borderLeft: 'none', paddingLeft: 0 }}>
               <div className="user-info-text text-right" style={{ marginRight: '24px' }}>
@@ -143,6 +172,9 @@ const Layout = () => {
         .avatar { width: 44px; height: 44px; background: #f0f1ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; border: 1.5px solid #e0e2ff; color: #5558fa; overflow: hidden; }
 
         .content-container { padding: 40px 60px; flex: 1; }
+
+        .offline-badge { display: flex; align-items: center; gap: 8px; background-color: #fee2e2; color: #ef4444; padding: 6px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.025em; border: 1px solid #fecaca; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
       `}</style>
     </div>
   );

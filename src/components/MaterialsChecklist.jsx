@@ -5,20 +5,58 @@ const MaterialsChecklist = ({ items, values, onChange }) => {
     <div className="materials-container">
       <div className="materials-list flex flex-col gap-4">
         {items.map((item, index) => {
-          const isSubsection = typeof item === 'string' && item.trim().endsWith(':');
-          const isStandalone = typeof item === 'string' && !isSubsection;
-
-          const itemName = isSubsection || isStandalone ? item : item.name;
+          const isSubsection = typeof item === 'string'; // En materiales, cualquier string es una sección
+          const itemName = isSubsection ? (item.trim().endsWith(':') ? item : `${item.trim()}:`) : item.name;
           const category = item.category || null;
-          const currentValue = values[index] || 0;
 
           if (isSubsection) {
+            // Si es un string, lo tratamos como cabecera de sección.
+            // Si no tiene ítems reales debajo (es el último o el siguiente también es un string),
+            // inyectamos la fila virtual de UNICA OPCIÓN.
+            const nextItem = items[index + 1];
+            const isTrulyEmpty = !nextItem || typeof nextItem === 'string';
+            const currentValue = values[index] || 0;
+
             return (
-              <div key={index} className="checklist-subsection-header animate-fade-in !mt-8 !mb-4">
-                {itemName}
+              <div key={index} className="subsection-wrapper-refined">
+                <div className="checklist-subsection-header animate-fade-in !mt-8 !mb-4">
+                  {itemName}
+                </div>
+                {isTrulyEmpty && (
+                  <div className="material-row-refined animate-fade-in shadow-soft !bg-[#fafafa] border-dashed">
+                    <div className="material-info-part">
+                      <div className="icon-badge-centered" style={{ background: '#fff' }}>
+                        <Package size={20} className="text-indigo-300" />
+                      </div>
+                      <div>
+                        <span className="material-category-tag">REQUERIDO</span>
+                        <h4 className="material-name-heading !text-indigo-600">UNICA OPCIÓN</h4>
+                      </div>
+                    </div>
+
+                    <div className="qty-control-refined !bg-white">
+                      <div className="qty-display-box">
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          className="qty-input"
+                          value={currentValue === 0 ? '' : currentValue}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            onChange(index, isNaN(val) ? 0 : Math.max(0, val));
+                          }}
+                        />
+                        <span className="qty-unit">UNS</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           }
+
+          const currentValue = values[index] || 0;
 
           return (
             <div key={index} className="material-row-refined animate-fade-in shadow-soft">
