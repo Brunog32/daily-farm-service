@@ -167,6 +167,35 @@ const ServicesHub = () => {
                 .btn-cancel-modal:hover { background: #f1f5f9; color: #1e293b; }
                 .hub-modal-actions .btn-primary-jm { padding: 0 40px; height: 44px; font-size: 14px; box-shadow: 0 4px 12px rgba(85,88,250,0.2) !important; }
                 
+                @media (max-width: 768px) {
+                    .services-hub-container { padding: 0 4px; }
+                    .hub-header { margin-bottom: 24px; }
+                    .hub-header h2 { font-size: 1.5rem; }
+                    .hub-header p { font-size: 0.875rem; }
+                    
+                    .hub-actions-card { 
+                        flex-direction: column; 
+                        text-align: center; 
+                        padding: 24px; 
+                        gap: 20px; 
+                        margin-bottom: 32px; 
+                    }
+                    .hub-actions-card h3 { font-size: 1.15rem; }
+                    .hub-actions-card p { font-size: 0.85rem; margin-bottom: 4px; }
+                    .hub-actions-card .btn-primary-jm { width: 100%; height: 48px; }
+                    
+                    .drafts-grid { grid-template-columns: 1fr; gap: 16px; }
+                    .draft-card { padding: 20px; }
+                    .draft-card h4 { font-size: 1.1rem; }
+                    
+                    .hub-modal-content { padding: 24px; border-radius: 20px; }
+                    .hub-modal-content h2 { font-size: 1.25rem; margin-bottom: 20px; }
+                    .modal-form-group { margin-bottom: 24px; }
+                    .hub-modal-actions { flex-direction: column-reverse; gap: 8px; }
+                    .btn-cancel-modal { width: 100%; height: 48px; order: 2; }
+                    .hub-modal-actions .btn-primary-jm { width: 100%; height: 48px; order: 1; }
+                }
+
                 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
                 @keyframes fadeScaleIn { from { opacity: 0; transform: scale(0.98) translateY(4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
                 @keyframes slideUpFade { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }

@@ -194,8 +194,8 @@ const Services = () => {
                 </div>
             </div>
 
-            {/* TABLA DE RESULTADOS */}
-            <div className="responsive-table-outer">
+            {/* TABLA DE RESULTADOS (DESKTOP) */}
+            <div className="responsive-table-outer desktop-only">
                 <table className="tambos-styled-table">
                     <thead>
                         <tr>
@@ -229,8 +229,6 @@ const Services = () => {
                                             const userData = usersMap[service.operator?.toLowerCase()];
                                             const displayName = userData ? userData.fullName : (service.operator || 'TÉCNICO');
                                             const displayImg = userData ? userData.img : null;
-
-                                            // Handle legacy data where image was in operatorImg
                                             const finalImg = displayImg || service.operatorImg;
 
                                             return (
@@ -252,7 +250,6 @@ const Services = () => {
                                 </td>
                                 <td>
                                     <div className="actions-group-cell-right">
-
                                         <button
                                             className={`icon-btn-pill upload-btn-jm ${!isOnline ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             onClick={() => isOnline && handleUploadToDrive(service)}
@@ -268,22 +265,77 @@ const Services = () => {
                                 </td>
                             </tr>
                         ))}
-                        {filteredServices.length === 0 && (
-                            <tr>
-                                <td colSpan="4" className="empty-table-td">
-                                    <div className="empty-state-visual">
-                                        <div className="empty-icon-circle">
-                                            <History size={48} strokeWidth={1} />
-                                        </div>
-                                        <p className="text-slate-300 font-black text-xl">Sin reportes registrados</p>
-                                        <p className="text-[#bbb] font-bold text-[10px] uppercase tracking-widest mt-1">Ajusta los filtros para encontrar resultados</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        )}
                     </tbody>
                 </table>
             </div>
+
+            {/* VISTA MOBILE (CARDS) */}
+            <div className="mobile-only services-mobile-list">
+                {filteredServices.map((service) => (
+                    <div key={service.id} className="service-mobile-card shadow-sm">
+                        <div className="card-mobile-header">
+                            <div className="tambo-info">
+                                <h3 className="card-tambo-name">{service.tamboName}</h3>
+                                <span className="card-service-id">ID: {service.id.slice(0, 12).toUpperCase()}</span>
+                            </div>
+                        </div>
+
+                        <div className="card-mobile-body">
+                            <div className="mobile-chrono-row">
+                                <Calendar size={14} className="text-slate-400" />
+                                <span>{service.date} • {service.startTime}</span>
+                            </div>
+
+                            <div className="mobile-operator-row">
+                                {(() => {
+                                    const userData = usersMap[service.operator?.toLowerCase()];
+                                    const displayName = userData ? userData.fullName : (service.operator || 'TÉCNICO');
+                                    const displayImg = userData ? userData.img : null;
+                                    const finalImg = displayImg || service.operatorImg;
+
+                                    return (
+                                        <div className="flex items-center gap-2">
+                                            <div className="user-avatar-circle" style={{ width: '24px', height: '24px', minWidth: '24px', fontSize: '8px' }}>
+                                                {finalImg ? (
+                                                    <img src={finalImg} alt="Avatar" />
+                                                ) : (
+                                                    displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                                                )}
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{displayName}</span>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+
+                        <div className="card-mobile-actions">
+                            <button
+                                className={`mobile-action-btn-pill upload ${!isOnline ? 'disabled' : ''}`}
+                                onClick={() => isOnline && handleUploadToDrive(service)}
+                                disabled={isUploading || !isOnline}
+                            >
+                                <CloudUpload size={16} />
+                                <span>Drive</span>
+                            </button>
+                            <button className="mobile-action-btn-pill download" onClick={() => handleDownload(service)}>
+                                <FileDown size={16} />
+                                <span>Excel</span>
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {filteredServices.length === 0 && (
+                <div className="empty-state-visual py-40">
+                    <div className="empty-icon-circle">
+                        <History size={48} strokeWidth={1} />
+                    </div>
+                    <p className="text-slate-300 font-black text-xl text-center">Sin reportes registrados</p>
+                    <p className="text-[#bbb] font-bold text-[10px] uppercase tracking-widest mt-1 text-center">Ajusta los filtros para encontrar resultados</p>
+                </div>
+            )}
 
 
 
@@ -411,8 +463,62 @@ const Services = () => {
                 .user-avatar-circle { width: 34px; height: 34px; min-width: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f0f1ff; border: 1.5px solid #e0e2ff; color: #5558fa; font-weight: 800; font-size: 11px; text-transform: uppercase; overflow: hidden; }
                 .user-avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
 
-                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                .desktop-only { display: block; }
+                .mobile-only { display: none; }
+ 
+                 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                 
+                 @media (max-width: 768px) {
+                     .desktop-only { display: none; }
+                     .mobile-only { display: block; }
+                     
+                     .filters-bar-service { gap: 12px; margin-bottom: 20px; }
+                     .jm-search-container-main { min-width: 100%; padding: 10px 16px; }
+                     .filters-secondary-row { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+                     .date-range-pill { padding: 0 12px; min-width: 0; flex: 1; }
+                     .date-inputs-group { gap: 4px; overflow: hidden; }
+                     .range-input { width: 90px; font-size: 10px; }
+                     .range-sep { font-size: 8px; }
+                     .btn-clear-filters { height: 50px; width: 50px; }
+ 
+                     .services-history { padding-bottom: 120px; }
+                     .services-mobile-list { display: flex; flex-direction: column; gap: 12px; }
+                     
+                     .service-mobile-card { 
+                         background: #fff; 
+                         border: 1.5px solid #f2f2f2; 
+                         border-radius: 20px; 
+                         padding: 16px;
+                     }
+                     
+                     .card-mobile-header { margin-bottom: 12px; }
+                     .card-tambo-name { margin: 0; font-size: 1.1rem; font-weight: 900; color: #111; }
+                     .card-service-id { font-size: 9px; font-weight: 800; color: #ccc; letter-spacing: 0.5px; text-transform: uppercase; }
+                     
+                     .card-mobile-body { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+                     .mobile-chrono-row, .mobile-operator-row { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #666; }
+                     
+                     .card-mobile-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+                     .mobile-action-btn-pill { 
+                         height: 44px; 
+                         border-radius: 12px; 
+                         border: 1.5px solid #f2f2f2; 
+                         background: #fdfdfd; 
+                         display: flex; 
+                         align-items: center; 
+                         justify-content: center; 
+                         gap: 6px; 
+                         font-size: 12px; 
+                         font-weight: 800;
+                         transition: all 0.2s;
+                     }
+                     .mobile-action-btn-pill.upload { color: #0284c7; border-color: #bae6fd; background: #f0f9ff; }
+                     .mobile-action-btn-pill.download { color: #10b981; border-color: #dcfce7; background: #f0fdf4; }
+                     .mobile-action-btn-pill.disabled { opacity: 0.5; filter: grayscale(1); }
+ 
+                     .upload-loader-card { padding: 32px 24px; }
+                 }
             `}</style>
         </div>
     );

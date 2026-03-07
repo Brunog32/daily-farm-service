@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { Cow } from '../components/Icons';
@@ -10,6 +10,13 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const user = localStorage.getItem('df_user');
+        if (user) {
+            navigate('/tambos');
+        }
+    }, [navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -66,8 +73,8 @@ const Login = () => {
         <div className="login-screen">
             <div className="login-container animate-fade-in shadow-large">
                 <div className="login-branding">
-                    <div className="logo-box-dark">
-                        <Cow size={36} color="#fff" strokeWidth={2.5} />
+                    <div className="logo-box-light">
+                        <Cow size={36} color="#111" />
                     </div>
                     <div className="brand-labels">
                         <h1>OJ Service</h1>
@@ -127,9 +134,9 @@ const Login = () => {
                 .login-container { background: #fff; width: 100%; max-width: 480px; border-radius: 40px; overflow: hidden; border: 1.5px solid #f8f8f8; }
                 
                 .login-branding { padding: 48px; background: #111; display: flex; align-items: center; gap: 24px; color: #fff; }
-                .logo-box-dark { width: 64px; height: 64px; border: 2.5px solid rgba(255,255,255,0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+                .logo-box-light { width: 64px; height: 64px; background: #fff; border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
                 .brand-labels h1 { margin: 0 !important; color: #fff; font-size: 1.65rem; font-weight: 900; letter-spacing: -0.025em; }
-                .brand-labels p { margin: 4px 0 0 0 !important; color: #444; font-size: 9px; font-weight: 900; letter-spacing: 2.5px; }
+                .brand-labels p { margin: 4px 0 0 0 !important; color: rgba(255,255,255,0.4); font-size: 9px; font-weight: 900; letter-spacing: 2.5px; }
 
                 .login-form-refined { padding: 56px; background: #fff; }
                 .form-head h2 { font-size: 1.75rem; font-weight: 900; color: #111; margin-bottom: 8px !important; letter-spacing: -0.04em; }
@@ -147,7 +154,7 @@ const Login = () => {
                 .btn-login-submit { width: 100%; border: none; height: 64px; background: #111; color: #fff; border-radius: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 16px; cursor: pointer; transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 12px 30px rgba(0,0,0,0.1); }
                 .btn-login-submit:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); background: #222; }
                 
-                .footer-copyright { text-align: center; font-size: 10px; font-weight: 800; color: #eee; letter-spacing: 0.5px; }
+                .footer-copyright { text-align: center; font-size: 10px; font-weight: 800; color: #bbb; letter-spacing: 0.5px; }
 
                 .mt-2 { margin-top: 8px; }
                 .mt-4 { margin-top: 16px; }

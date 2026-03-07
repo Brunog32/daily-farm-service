@@ -141,6 +141,17 @@ const MaterialsChecklist = ({ items, values, onChange }) => {
         .qty-input[type=number] { -moz-appearance: textfield; }
 
         .qty-unit { font-size: 8px; font-weight: 900; color: #ccc; margin-top: 2px; }
+
+        @media (max-width: 768px) {
+          .material-row-refined { flex-direction: column; align-items: stretch; gap: 16px; padding: 16px; }
+          .material-info-part { gap: 12px; }
+          .material-name-heading { font-size: 0.95rem; }
+          .qty-control-refined { width: 100%; justify-content: space-between; padding: 10px 16px; }
+          .qty-display-box { flex-direction: row; min-width: 0; width: 100%; justify-content: space-between; }
+          .qty-input { width: 80px; font-size: 1rem; }
+          .qty-unit { margin-top: 0; font-size: 10px; }
+          .checklist-subsection-header { margin-top: 20px; font-size: 0.75rem; padding: 10px 16px; }
+        }
       `}</style>
     </div>
   );

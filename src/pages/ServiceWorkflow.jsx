@@ -521,10 +521,65 @@ const ServiceWorkflow = () => {
                 .animate-fade-in { animation: fadeScaleIn 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
                 
                 @media (max-width: 768px) {
+                    .service-execution-refined { padding: 0 4px; }
+                    .execution-top-bar { flex-direction: column; align-items: stretch; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; text-align: center; }
+                    .execution-badge { justify-content: center; }
+                    .top-info h2 { font-size: 1.4rem; }
+                    .execution-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+                    .btn-sm { height: 44px !important; width: 100%; border-radius: 12px !important; font-size: 12px !important; }
+                    
+                    .main-tabs-container { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+                    .group-tab-btn { padding: 12px 10px; font-size: 12px; justify-content: center; }
+                    
                     .execution-layout { flex-direction: column; }
-                    .sidebar-checklists { width: 100%; flex-direction: row; overflow-x: auto; padding-bottom: 8px; }
+                    .sidebar-checklists { 
+                        width: 100%; 
+                        flex-direction: row; 
+                        overflow-x: auto; 
+                        padding: 4px 0 16px 0; 
+                        margin-bottom: 8px;
+                        gap: 12px;
+                        -webkit-overflow-scrolling: touch;
+                        scrollbar-width: none;
+                    }
+                    .sidebar-checklists::-webkit-scrollbar { display: none; }
                     .sidebar-checklists h3 { display: none; }
-                    .sub-tab-btn { min-width: 200px; flex-shrink: 0; }
+                    
+                    .sub-tab-btn { 
+                        min-width: 150px; 
+                        max-width: 200px;
+                        padding: 10px 12px; 
+                        background: #f8f9fa;
+                        border: 1.5px solid #f1f5f9;
+                        height: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                    }
+                    .sub-tab-btn.active { border-color: #5558fa33; }
+                    .sub-tab-title { align-items: center; gap: 6px; margin-bottom: 8px; }
+                    .sub-tab-title span { 
+                        font-size: 12px; 
+                        font-weight: 900;
+                        max-width: none; 
+                        white-space: normal; 
+                        overflow: visible; 
+                        text-overflow: clip;
+                        line-height: 1.2;
+                        text-align: left;
+                    }
+                    .sub-tab-title .icon-wrapper svg { width: 14px; height: 14px; }
+                    .sub-tab-progress { margin-top: auto; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.03); }
+                    .sub-tab-progress span { font-size: 9px; font-weight: 900; }
+                    .progress-bar-bg { width: 44px; }
+                    
+                    .active-checklist-content { width: 100%; margin-top: 8px; }
+                    .checklist-render-card { padding: 16px; border-radius: 20px; }
+                    .checklist-render-header h3 { font-size: 1.1rem; }
+                    
+                    .modal-card-reborn { padding: 32px 24px; border-radius: 28px; width: 95%; }
+                    .modal-title-v9 { font-size: 20px; }
+                    .btn-entendido-v9 { width: 100%; padding: 14px 0; }
                 }
 
                 /* TOAST REFINED STYLES */

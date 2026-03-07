@@ -554,6 +554,68 @@ const ChecklistEditor = () => {
                 .shadow-soft { box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
                 .shadow-large { box-shadow: 0 20px 60px rgba(0,0,0,0.05); }
 
+                @media (max-width: 768px) {
+                    .editor-v9 { padding-top: 10px; padding-bottom: 120px; }
+                    .row-header { display: none !important; }
+                    
+                    .row-grid-v9 { 
+                        grid-template-columns: 30px 30px 1fr auto;
+                        grid-template-rows: auto;
+                        padding: 10px 8px !important;
+                        gap: 2px;
+                        column-gap: 8px;
+                        align-items: start;
+                    }
+
+                    .row-grid-v9.group-row { background: #fff !important; }
+                    .row-grid-v9.item-row { 
+                        background: #fafbfc !important; 
+                        border-left: 2px solid #e2e8f0; 
+                        grid-template-columns: 32px 1fr auto;
+                    }
+
+                    /* Orden (Drag) */
+                    .row-grid-v9 > div:nth-child(1) { grid-area: auto; }
+                    
+                    /* Visibilidad / Árbol (Chevron en grupos, Oculto en items) */
+                    .row-grid-v9.group-row > div:nth-child(2) { grid-area: auto; display: flex !important; }
+                    .row-grid-v9.item-row > div:nth-child(2) { display: none !important; }
+                    
+                    /* Título */
+                    .row-grid-v9.group-row > div:nth-child(3) { grid-area: auto; padding-right: 4px; padding-top: 4px; }
+                    .row-grid-v9.item-row > div:nth-child(3) { grid-area: auto; padding-right: 4px; padding-top: 4px; }
+                    
+                    /* Cantidad (Oculto) */
+                    .row-grid-v9 > div:nth-child(4) { display: none !important; }
+                    
+                    /* Acciones */
+                    .row-grid-v9 > div:nth-child(5) { 
+                        grid-area: auto; 
+                        justify-content: flex-end; 
+                        opacity: 1; 
+                        padding-top: 2px;
+                        padding-right: 0;
+                        margin-top: 0;
+                        border-top: none;
+                        width: auto;
+                        gap: 4px;
+                    }
+
+                    .actions-cell-right { opacity: 1; visibility: visible; }
+                    .action-btn-circle { 
+                        width: 32px; 
+                        height: 32px; 
+                        background: #f8fafc; 
+                        border-color: #f1f5f9; 
+                        border-radius: 8px;
+                    }
+
+                    .inline-edit-v9.group { font-size: 14px; }
+                    .inline-edit-v9.item { font-size: 13px; }
+
+                    .tree-arm-v9 { display: none !important; }
+                }
+
                 /* TOAST REFINED STYLES (Vanilla CSS) */
                 .toast-portal-v9 {
                     position: fixed;

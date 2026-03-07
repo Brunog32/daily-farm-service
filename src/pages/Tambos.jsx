@@ -55,9 +55,13 @@ const Tambos = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                {/* BOTÓN AGREGAR PARA MOBILE (ARRIBA) */}
+                <button className="mobile-only btn-add-mobile-top" onClick={openCreateModal}>
+                    <Plus size={24} strokeWidth={3} />
+                </button>
             </div>
 
-            <div className="responsive-table-outer shadow-large">
+            <div className="responsive-table-outer shadow-large desktop-only">
                 <table className="tambos-styled-table">
                     <thead>
                         <tr>
@@ -105,21 +109,44 @@ const Tambos = () => {
                                 </td>
                             </tr>
                         ))}
-                        {filteredTambos.length === 0 && (
-                            <tr>
-                                <td colSpan="5" className="empty-table-td">
-                                    <div className="empty-state-visual">
-                                        <div className="empty-icon-circle">
-                                            <Factory size={48} strokeWidth={1} />
-                                        </div>
-                                        <p className="text-slate-300 font-black text-xl">Sin registros activos</p>
-                                        <button className="btn-primary-jm mt-4" onClick={openCreateModal}>Comenzar Ahora</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* VISTA MOBILE (CARDS) */}
+            <div className="mobile-only tambos-mobile-list">
+                {filteredTambos.map((tambo) => (
+                    <div key={tambo.id} className="tambo-mobile-card shadow-sm" onClick={() => openEditModal(tambo.id)}>
+                        <div className="card-top">
+                            <div className="card-icon">
+                                <Factory size={20} />
+                            </div>
+                            <div className="card-info">
+                                <h3 className="card-name">{tambo.name}</h3>
+                                <div className="card-location">
+                                    <MapPin size={12} />
+                                    <span>{tambo.location || 'Sin ubicación'}</span>
+                                </div>
+                            </div>
+                            <div className="card-badge">
+                                <span className="badge-tambo-modern">ACTIVO</span>
+                            </div>
+                        </div>
+                        <div className="card-footer">
+                            <span className="card-id">#ID: {tambo.id.slice(0, 8).toUpperCase()}</span>
+                            <div className="card-action-text">Toca para editar <Edit size={12} /></div>
+                        </div>
+                    </div>
+                ))}
+
+                {filteredTambos.length === 0 && (
+                    <div className="empty-state-visual py-20">
+                        <div className="empty-icon-circle">
+                            <Factory size={48} strokeWidth={1} />
+                        </div>
+                        <p className="text-slate-300 font-black text-xl">Sin registros</p>
+                    </div>
+                )}
             </div>
 
             {isModalOpen && (
@@ -163,8 +190,54 @@ const Tambos = () => {
         .btn-add-table-corner { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; background: #111; color: #fff; width: 26px; height: 26px; border-radius: 8px; cursor: pointer; border: none; transition: all 0.2s; z-index: 10; }
         .btn-add-table-corner:hover { background: #5558fa; transform: translateY(-50%) scale(1.1); box-shadow: 0 4px 8px rgba(85,88,250,0.3); }
 
+        .mobile-only { display: none; }
+
+        @media (max-width: 768px) {
+          .tambos-container { padding-bottom: 80px; }
+          .desktop-only { display: none !important; }
+          .mobile-only { display: block; }
+          
+          .top-management-bar { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin-bottom: 32px; 
+            padding: 0 4px;
+          }
+          
+          .btn-add-mobile-top { 
+            width: 50px; 
+            height: 50px; 
+            background: #111; 
+            color: #fff; 
+            border: none; 
+            border-radius: 14px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+          }
+          .btn-add-mobile-top:active { transform: scale(0.9); background: #5558fa; }
+          
+          .tambo-mobile-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1.5px solid #f2f2f2; transition: all 0.2s; position: relative; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+          .tambo-mobile-card:active { transform: scale(0.98); background: #fafafa; border-color: #eee; }
+          
+          .card-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
+          .card-icon { width: 44px; height: 44px; background: #f8f9fa; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #111; border: 1px solid #f0f0f0; }
+          .card-info { flex: 1; min-width: 0; }
+          .card-name { font-size: 1.15rem; font-weight: 900; color: #111; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .card-location { display: flex; align-items: center; gap: 4px; color: #64748b; font-size: 13px; font-weight: 700; margin-top: 4px; }
+          
+          .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid #f8f9fa; }
+          .card-id { font-size: 11px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; }
+          .card-action-text { font-size: 13px; font-weight: 800; color: #5558fa; text-transform: uppercase; display: flex; align-items: center; gap: 4px; letter-spacing: -0.2px; }
+          
+          .mobile-fab { display: none; }
+        }
       `}</style>
-        </div>
+        </div >
     );
 };
 

@@ -109,6 +109,17 @@ const Checklists = () => {
         .btn-edit-template-jm:hover .chevron-circle-jm { background: rgba(255,255,255,0.1); }
 
         .empty-checklists-state { padding: 120px 40px; text-align: center; background: #fafafa; border-radius: 40px; border: 3px dashed #f0f0f0; display: flex; flex-direction: column; align-items: center; }
+
+        @media (max-width: 768px) {
+          .sections-container { gap: 40px; }
+          .group-header-refined { margin-bottom: 20px; }
+          .checklist-grid-layout { grid-template-columns: 1fr; gap: 16px; }
+          .template-card-modern { padding: 20px; border-radius: 20px; }
+          .card-top-header { gap: 16px; margin-bottom: 24px; }
+          .section-title-h3 { font-size: 1.1rem; }
+          .icon-badge-centered svg { width: 18px; height: 18px; }
+          .btn-edit-template-jm { padding: 10px 20px; font-size: 12px; }
+        }
       `}</style>
         </div>
     );

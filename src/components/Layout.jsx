@@ -65,6 +65,11 @@ const Layout = () => {
     return 'Panel de Control';
   };
 
+  const isMainHubPage = () => {
+    const mainPaths = ['/tambos', '/checklists', '/services-hub', '/services', '/settings'];
+    return mainPaths.includes(location.pathname);
+  };
+
   return (
     <div className="layout">
       {/* Sidebar */}
@@ -103,22 +108,26 @@ const Layout = () => {
       <main className="main-content">
         <header className="top-header">
           <div className="header-left">
-            <button onClick={() => navigate(-1)} className="back-btn">
-              <ChevronLeft size={20} />
-            </button>
-            <h1 className="header-title">{getPageTitle()}</h1>
+            {!isMainHubPage() && (
+              <button onClick={() => navigate(-1)} className="back-btn">
+                <ChevronLeft size={20} />
+              </button>
+            )}
+            <h1 className="header-title" style={{ marginLeft: isMainHubPage() ? 0 : '12px' }}>
+              {getPageTitle()}
+            </h1>
           </div>
 
           <div className="header-right">
             {!isOnline && (
               <div className="offline-badge">
                 <WifiOff size={16} />
-                <span>Modo Offline</span>
+                <span className="mobile-hidden">Modo Offline</span>
               </div>
             )}
             <div id="header-portal-action"></div>
             <div className="user-area" style={{ borderLeft: 'none', paddingLeft: 0 }}>
-              <div className="user-info-text text-right" style={{ marginRight: '24px' }}>
+              <div className="user-info-text text-right mobile-hidden" style={{ marginRight: '24px' }}>
                 <span className="user-name block font-black text-slate-800">{currentUser ? `${currentUser.name} ${currentUser.lastName}` : 'Operador'}</span>
               </div>
               <div className="avatar">
@@ -137,6 +146,31 @@ const Layout = () => {
         <div className="content-container">
           <Outlet />
         </div>
+
+        {/* Bottom Navigation for Mobile */}
+        <nav className="mobile-nav">
+          <Link to="/tambos" className={`mobile-nav-item ${isActive('/tambos') ? 'active' : ''}`}>
+            <Factory size={22} />
+            <span>Tambos</span>
+          </Link>
+          <Link to="/checklists" className={`mobile-nav-item ${isActive('/checklists') ? 'active' : ''}`}>
+            <ClipboardList size={22} />
+            <span>Plantillas</span>
+          </Link>
+          <Link to="/services-hub" className="mobile-nav-item-center">
+            <div className={`center-icon-wrapper ${isActive('/services-hub') ? 'active' : ''}`}>
+              <Play size={24} fill={isActive('/services-hub') ? 'white' : 'none'} />
+            </div>
+          </Link>
+          <Link to="/services" className={`mobile-nav-item ${isActive('/services') ? 'active' : ''}`}>
+            <History size={22} />
+            <span>Historial</span>
+          </Link>
+          <button onClick={handleLogout} className="mobile-nav-item">
+            <LogOut size={22} />
+            <span>Salir</span>
+          </button>
+        </nav>
       </main>
 
       <style>{`
@@ -175,6 +209,70 @@ const Layout = () => {
 
         .offline-badge { display: flex; align-items: center; gap: 8px; background-color: #fee2e2; color: #ef4444; padding: 6px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.025em; border: 1px solid #fecaca; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        .mobile-nav { display: none; }
+
+        @media (max-width: 768px) {
+          .sidebar { display: none; }
+          .top-header { padding: 16px 20px; }
+          .header-title { font-size: 1.25rem; }
+          .header-right { gap: 16px; }
+          .mobile-hidden { display: none; }
+          .content-container { padding: 20px 20px 100px 20px; }
+          
+          .mobile-nav { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            background: #fff; 
+            border-top: 1.5px solid #f0f0f0; 
+            padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); 
+            z-index: 100;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
+          }
+          
+          .mobile-nav-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 4px; 
+            color: #999; 
+            text-decoration: none;
+            background: none;
+            border: none;
+          }
+          .mobile-nav-item span { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; }
+          .mobile-nav-item.active { color: #111; }
+          
+          .mobile-nav-item-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transform: translateY(-20px);
+          }
+          .center-icon-wrapper {
+            width: 56px;
+            height: 56px;
+            background: #111;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border: 4px solid #fff;
+            transition: all 0.2s;
+          }
+          .center-icon-wrapper.active {
+            background: #5558fa;
+            box-shadow: 0 8px 16px rgba(85, 88, 250, 0.3);
+          }
+        }
       `}</style>
     </div>
   );

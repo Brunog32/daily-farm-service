@@ -133,6 +133,16 @@ const Checklist = ({ title, items, values, onChange }) => {
         .status-btn-compact.ok.active { background: #10b981; color: #fff; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
         .status-btn-compact.fail.active { background: #ef4444; color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
         .status-btn-compact.na.active { background: #64748b; color: #fff; box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2); }
+
+        @media (max-width: 768px) {
+          .checklist-item-row { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; }
+          .row-content-inner { margin-right: 0; }
+          .row-text-main { font-size: 0.875rem; }
+          .status-button-group-v2 { display: grid; grid-template-columns: 1fr 1fr 1fr; width: 100%; gap: 4px; }
+          .status-btn-compact { width: 100%; height: 44px; }
+          .checklist-subsection-header { margin: 24px 0 8px 0; padding: 10px 16px; }
+          .checklist-subsection-header span { font-size: 0.75rem; }
+        }
       `}</style>
     </div>
   );
