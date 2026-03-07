@@ -1,0 +1,270 @@
+:root {
+  --primary: #5558fa;
+  --primary-light: #f0f1ff;
+  --primary-hover: #4447d1;
+  --secondary: #94a3b8;
+  --background: #ffffff;
+  --sidebar-bg: #1e1e1e;
+  --sidebar-text: #9a9a9a;
+  --foreground: #1e1e1e;
+  --card: #ffffff;
+  --border: #f1f1f1;
+  --input-bg: #f8f8f8;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 99px;
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tipografía Global con Márgenes Claros */
+h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 2rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 1rem;
+}
+
+p {
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+/* --- DISEÑO SISTEMA DE BOTONES JM --- */
+
+/* Botón Primario Píldora (Negro) */
+.btn-primary-jm {
+  background: #111 !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 14px 32px !important;
+  border-radius: 50px !important;
+  font-weight: 800 !important;
+  font-size: 0.9375rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+}
+
+.btn-primary-jm:hover {
+  transform: translateY(-2px);
+  background: #333 !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Botón Secundario Píldora (Blanco/Borde) */
+.btn-secondary-jm {
+  background: #fff !important;
+  color: #111 !important;
+  border: 1.5px solid #f2f2f2 !important;
+  padding: 14px 32px !important;
+  border-radius: 50px !important;
+  font-weight: 800 !important;
+  font-size: 0.9375rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  outline: none !important;
+}
+
+.btn-secondary-jm:hover {
+  border-color: #ddd !important;
+  background: #fdfdfd !important;
+  transform: translateY(-2px);
+}
+
+/* Botón Back Link */
+.btn-back-refined {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  background: #fff !important;
+  border: 1.5px solid #f0f0f0 !important;
+  padding: 8px 20px !important;
+  border-radius: 50px !important;
+  color: #bbb !important;
+  font-weight: 800 !important;
+  font-size: 10px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  width: fit-content !important;
+  margin-bottom: 24px !important;
+}
+
+.btn-back-refined:hover {
+  color: #111 !important;
+  border-color: #111 !important;
+  transform: translateX(-4px);
+}
+
+/* Botones de Acción Cuadrados */
+.icon-btn-pill {
+  width: 48px !important;
+  height: 48px !important;
+  background: #fff !important;
+  border: 2px solid #f2f2f2 !important;
+  border-radius: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #475569 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+  outline: none !important;
+}
+
+.icon-btn-pill:hover {
+  border-color: #111;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  color: #111;
+}
+
+.start-btn-jm:hover {
+  color: #10b981 !important;
+  border-color: #10b98133 !important;
+  background: #f0fdf4 !important;
+}
+
+.view-btn-jm:hover {
+  color: #5558fa !important;
+  border-color: #5558fa33 !important;
+  background: #f0f1ff !important;
+}
+
+.edit-btn-jm:hover {
+  color: #5558fa !important;
+  border-color: #5558fa33 !important;
+  background: #f0f1ff !important;
+}
+
+/* Centrado Perfecto para Badges */
+.icon-badge-centered {
+  width: 44px;
+  height: 44px;
+  background: #f0f1ff;
+  border-radius: 14px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0;
+}
+
+/* --- UTILIDADES --- */
+.shadow-soft {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+}
+
+.shadow-large {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+}
+
+.animate-fade-in {
+  animation: refinedFade 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes refinedFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #eee;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ddd;
+}
+
+/* Botón de Filtro JM */
+.btn-filter-jm {
+  background: #fdfdfd !important;
+  color: #111 !important;
+  border: 1.5px solid #f0f0f0 !important;
+  padding: 12px 24px !important;
+  border-radius: 50px !important;
+  font-weight: 800 !important;
+  font-size: 0.8125rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  outline: none !important;
+}
+
+.btn-filter-jm:hover {
+  background: #fff !important;
+  border-color: #111 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+}
+
+.icon-badge-admin {
+  width: 44px;
+  height: 44px;
+  background: #f0f1ff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}

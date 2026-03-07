@@ -1,0 +1,383 @@
+
+--- Sheet: CHECK LIST EN SERVICE ---
+    Unnamed: 0                                              Unnamed: 1
+0          NaN                                       UNIDAD DE ORDEÑE:
+1          NaN        PEZONERAS CORRESPONDIENTES + 2 PAQUETES REPUESTO
+2          NaN             TUBOS CORTOS CORRESPONDIENTES + 8 RESPUESTO
+3          NaN                           REPUESTOS DE COLECTOR (GARRA)
+4          NaN                                2 CASQUILLOS DE REPUESTO
+5          NaN                                                     NaN
+6          NaN                                      SISTEMA DE LAVADO:
+7          NaN                  COPAS DE LAVADO -  LAVADOR DE PEZONERA
+8          NaN                                  DISTRIBUIDOR DE LAVADO
+9          NaN                   VELAS - JETTR DE LAVADO (SEGÚN TAMBO)
+10         NaN                                                     NaN
+11         NaN                                                PULSADO:
+12         NaN            KIT REPARACION DE PULSADORES CORRESPONDIENTE
+13         NaN                                       PULSADOR COMPLETO
+14         NaN                                                     NaN
+15         NaN                                             REGULACION:
+16         NaN                   KIT REPARACION DE REGULADOR DE VACIO 
+17         NaN                REGULADOR DE VACIO COMPLETO DE REPUESTO 
+18         NaN                   ACOPLES EN PVC PARA COLOCAR REGULADOR
+19         NaN                                                     NaN
+20         NaN                                         BOMBA DE LECHE:
+21         NaN                                   SELLO BOMBA DE LECHE 
+22         NaN                                         TAPA INTERMEDIA
+23         NaN                                              GUARNICION
+24         NaN                                                 TURBINA
+25         NaN                                                     EJE
+26         NaN                                          PICO DE SALIDA
+27         NaN                                                     NaN
+28         NaN                                         BOMBA DE VACIO:
+29         NaN          VALVULA ANTIRETORNO PARA BOMBA DE VACIO 75 PVC
+30         NaN                                                     NaN
+31         NaN                                              EXTRACTOR:
+32         NaN                      PIOLA PARA EXTRACTOR (SEGÚN TAMBO)
+33         NaN                     GANCHO PARA EXTRACTOR (SEGÚN TAMBO)
+34         NaN  KIT DE REPARACION PARA VALVULA EXTRACTOR (SEGÚN TAMBO)
+35         NaN                           DIAFRAGMA DE VALVULA DE CORTE
+36         NaN                                                     NaN
+37         NaN                                       REPUESTOS VARIOS:
+38         NaN                         VALVULA DE DRENAJE 3/4 AMARILLA
+39         NaN                                              VACUOMETRO
+40         NaN                       MONTURA PARA VALVULA - VACUOMETRO
+41         NaN                                   APLICADOR DE SELLADOR
+42         NaN                      DISPOSITIVO LAVA UBRE (LAVA TETAS)
+43         NaN                                  PAQUETE DE ESPONJA X 3
+44         NaN            ACCESORIOS GOMA (CUPLA - CODO - REDUCCIONES)
+45         NaN                     ABRAZADERAS PARA ACCESORISO DE GOMA
+46         NaN                        PAQUETE DE FILTROS (SEGUN TAMBO)
+47         NaN                                                     NaN
+48         NaN                                MAQUINARIA INDISPENSABLE
+49         NaN                                              PULSOGRAFO
+50         NaN                                          ARCO DE SIERRA
+51         NaN                                           LLAVE 13 Y 14
+52         NaN                                     ATORNILLADOR DEWALT
+
+--- Sheet: SERVICE EN TAMBO ---
+    Unnamed: 0                                                  Unnamed: 1
+0          NaN                                         CAMBIO DE PEZONERAS
+1          NaN                              CAMBIO DE TUBOS CORTOS PULSADO
+2          NaN                             CAMBIO DE TUBOS CORTOS DE LECHE
+3          NaN                                    CAMBIO DE MIRILLAS ROTAS
+4          NaN                       CAMBIO DE ACRILICOS DE COLECTOR ROTOS
+5          NaN                                   CAMBIO DE TAPA ACERO INOX
+6          NaN                        CAMBIO DE COLECTOR COMPLETO CON INOX
+7          NaN                        CAMBIO DE COLECTOR COMPLETO SIN INOX
+8          NaN                           CAMBIO DE CLIP DE CIERRE DE VACIO
+9          NaN                      CAMBIO DE DISTRIBUITOR DE PULSADO ROTO
+10         NaN                                  CAMBIO DE CASQUILLOS ROTOS
+11         NaN                            CAMBIO DE SELLO A BOMBA DE LECHE
+12         NaN                       CAMBIO DE GUARNICION A BOMBA DE LECHE
+13         NaN            CAMBIO DE KIT DE REPARACION A REGULADOR DE VACIO
+14         NaN                      CAMBIO DE KIT DE REPACION A PULSADORES
+15         NaN                         CAMBIO DE FILTROS EN LINEA FILTRADO
+16         NaN            CAMBIO DE COPAS DE LAVADO - LAVADOR DE PEZONERAS
+17         NaN                           CAMBIO DE VELAS - JETTS DE LAVADO
+18         NaN                       CAMBIO DE DISTRIBUIDOR DE LAVADO ROTO
+19         NaN      CAMBIO DE VALVULA DE DRENAJE DE DISTRIBUIDOR DE LAVADO
+20         NaN            CAMBIO DE VALVULA ANTIRRETORNO BOMBA DE VACIO 1 
+21         NaN             CAMBIO DE VALVULA ANTIRRETORNO BOMBA DE VACIO 2
+22         NaN             CAMBIO DE VALVULA ANTIRRETORNO BOMBA DE VACIO 3
+23         NaN                             CAMBIO PIOLA DE EXTRACTOR ROTAS
+24         NaN                                  CAMBIO DE GANCHO EXTRACTOR
+25         NaN              CAMBIO DE DIAGRAGMA VALVULA DE CORTE EXTRACTOR
+26         NaN                   CAMBIO DE VALVULA DE DRENAJE 3/4 AMARILLA
+27         NaN                                        CAMBIO DE VACUOMETRO
+28         NaN                                CAMBIO DE TUBOS LED QUEMADOS
+29         NaN             CAMBIOS DE RESISTENCIAS QUEMADAS EN TERMOTANQUE
+30         NaN                                                         NaN
+31         NaN                  LIMPIEZA DE PLACA INTERCAMBIADORA DE CALOR
+32         NaN                              LIMPIEZA DE REGULADRO DE VACIO
+33         NaN              LIMPIEZA DE PULSADORES QUE NO PASAN EL CHEQUEO
+34         NaN                              LIMPIEZA DE CAÑERIA DE PULSADO
+35         NaN                 LIMPIEZA DE TANQUE DE DISTRIBUIDOR DE VACIO
+36         NaN                    LIMPIEZA DE TANQUE DE RESERVA DE VACIO 1
+37         NaN                    LIMPIEZA DE TANQUE DE RESERVA DE VACIO 2
+38         NaN                    LIMPIEZA DE TANQUE DE RESERVA DE VACIO 3
+39         NaN                          LIMPIEZA DE VALVULA ANTIRRETORNO 1
+40         NaN                          LIMPIEZA DE VALVULA ANTIRRETORNO 2
+41         NaN                          LIMPIEZA DE VALVULA ANTIRRETORNO 3
+42         NaN                   LIMPIEZA DE ACEITERA DE BOMBA DE VACIO 1 
+43         NaN                    LIMPIEZA DE ACEITERA DE BOMBA DE VACIO 2
+44         NaN                    LIMPIEZA DE ACEITERA DE BOMBA DE VACIO 3
+45         NaN        LIMPIEZA DE VALVULA DE DRENAJE DE CAÑERIA DE PULSADO
+46         NaN  LIMPIEZA DE ACRILICOS DE EQUIPOS ESTANCO QUE SE DESARMARON
+47         NaN                           LIMPIEZA DE SARRO DE TERMOTANQUE 
+48         NaN                                                         NaN
+49         NaN                  CHEQUEO DE EQUIPO DE ORDEÑE CON PULSOGRAFO
+50         NaN                            TOMAR LITROS DE BOMBA DE VACIO 1
+51         NaN                            TOMAR LITROS DE BOMBA DE VACIO 2
+52         NaN                            TOMAR LITROS DE BOMBA DE VACIO 3
+53         NaN   CONTROLAR CONSUMO ELECTRICO EN RESISTENCIA DE TERMOTANQUE
+54         NaN  CONTROLAR SI HAY PERDIDA EN PLACA INTERCAMBIADORA DE CALOR
+55         NaN                  CONTROLAR FUNCIONAMIENTO DE BOMBA DE LECHE
+56         NaN               CONTROLAR TENSION DE CORREAS BOMBA DE VACIO 1
+57         NaN               CONTROLAR TENSION DE CORREAS BOMBA DE VACIO 2
+58         NaN               CONTROLAR TENSION DE CORREAS BOMBA DE VACIO 3
+
+--- Sheet: MATERIALES EN SERVICE ---
+    Unnamed: 0                                    Unnamed: 1            Unnamed: 2
+0          NaN                                    PEZONERAS:                   NaN
+1          NaN                                           NaN       HARMONY - RODEG
+2          NaN                                           NaN     ESTRIADAS - RODEG
+3          NaN                                           NaN       IRLANDA - RODEG
+4          NaN                                           NaN      MILENIUM - RODEG
+5          NaN                                           NaN         PZ 3 - RODEG 
+6          NaN                                           NaN        STD 12 - RODEG
+7          NaN                                           NaN              SILICONA
+8          NaN                                           NaN     HARMONY - DELAVAL
+9          NaN                         TUBOS CORTOS PULSADO:                   NaN
+10         NaN                                           NaN                   180
+11         NaN                                           NaN         IRLANDA - 200
+12         NaN                                           NaN  LINEA VERDE- NARANJA
+13         NaN                         TUBOS CORTOS DE LECHE                   NaN
+14         NaN                                      MIRILLAS                   NaN
+15         NaN                        ACRILICOS DE COLECTOR:                   NaN
+16         NaN                                           NaN      HARMONY NACIONAL
+17         NaN                                           NaN         BOSIO IRLANDA
+18         NaN                                           NaN   CLASIC 300 NACIONAL
+19         NaN                                           NaN                 RODEG
+20         NaN                       TAPA ACERO HARMONY INOX                   NaN
+21         NaN                   COLECTOR COMPLETO CON INOX:                   NaN
+22         NaN                                           NaN      HARMONY NACIONAL
+23         NaN                                           NaN         BOSIO IRLANDA
+24         NaN                                           NaN   CLASIC 300 NACIONAL
+25         NaN                                           NaN                 RODEG
+26         NaN                   COLECTOR COMPLETO SIN INOX:                   NaN
+27         NaN                                           NaN      HARMONY NACIONAL
+28         NaN                                           NaN         BOSIO IRLANDA
+29         NaN                                           NaN   CLASIC 300 NACIONAL
+30         NaN                                           NaN                 RODEG
+31         NaN                       CLIP DE CIERRE DE VACIO                   NaN
+32         NaN                       DISTRIBUIDOR DE PULSADO                   NaN
+33         NaN                                   CASQUILLOS:                   NaN
+34         NaN                                           NaN               HARMONY
+35         NaN                                           NaN            ESTRIADAS 
+36         NaN                                           NaN              IRLANDA 
+37         NaN                                           NaN              MILENIUM
+38         NaN                                           NaN                 PZ 3 
+39         NaN                                           NaN                STD 12
+40         NaN                                           NaN              SILICONA
+41         NaN                      SELLO DE BOMBA DE LECHE:                   NaN
+42         NaN                                           NaN                 RODEG
+43         NaN                                           NaN                 BOSIO
+44         NaN                                           NaN      FMP 110 NACIONAL
+45         NaN                                           NaN       FMP 110 DELAVAL
+46         NaN                                           NaN       FMP 55 NACIONAL
+47         NaN                                           NaN        FMP 55 DELAVAL
+48         NaN                  GUARNICION DE BOMBA DE LECHE                   NaN
+49         NaN       KIT DE REPARACION DE REGULADOR DE VACIO                   NaN
+50         NaN                KIT DE REPACION DE PULSADORES:                   NaN
+51         NaN                                           NaN                 RODEG
+52         NaN                                           NaN                   GEA
+53         NaN                                           NaN        EP-100 DELAVAL
+54         NaN                                           NaN                   SCR
+55         NaN        COPAS DE LAVADO - LAVADOR DE PEZONERAS                   NaN
+56         NaN                       VELAS - JETTS DE LAVADO                   NaN
+57         NaN                        DISTRIBUIDOR DE LAVADO                   NaN
+58         NaN  VALVULA DE DRENAJE DE DISTRIBUIDOR DE LAVADO                   NaN
+59         NaN                  VALVULA ANTIRRETORNO 75 PVC                    NaN
+60         NaN                            PIOLA DE EXTRACTOR                   NaN
+61         NaN             GANCHO EXTRACTOR ACR-5000 DELAVAL                   NaN
+62         NaN         DIAGRAGMA VALVULA DE CORTE EXTRACTOR:                   NaN
+63         NaN                                           NaN     ACR- 5000 DELAVAL
+64         NaN                                           NaN           HFC DELAVAL
+65         NaN                                           NaN                   SCR
+66         NaN               VALVULA DE DRENAJE 3/4 AMARILLA                   NaN
+67         NaN                              VACUOMETR0 100MM                   NaN
+68         NaN                                     TUBOS LED                   NaN
+69         NaN                     RESISTENCIAS TERMOTANQUE:                   NaN
+70         NaN                                           NaN         1000 W RHEEM 
+71         NaN                                           NaN       2000 W ITALIANA
+72         NaN                                           NaN          4000 W RHEEM
+
+--- Sheet: CHECK LIST COMEDEROS ---
+    Unnamed: 0                               Unnamed: 1
+0          NaN                          SINFÍN FLEXIBLE
+1          NaN                            SINFÍN RIGIDO
+2          NaN                   EJE PARA SINFÍN RIGIDO
+3          NaN                              CAÑO 90 PVC
+4          NaN                            CAÑO 90 CHAPA
+5          NaN                  CURVA DE LLENADO 90 PVC
+6          NaN            MANDO DOBLE BOLILLERO TELLMAK
+7          NaN                        TRABA PARA MANDOS
+8          NaN                 PARRILLA PARA MOTOR 1 HP
+9          NaN                 PARRILLA PARA MOTOR 2 HP
+10         NaN                          GRAMPA 90 CHICA
+11         NaN                         GRAMPA 90 GRANDE
+12         NaN                   BULON CON TUERCA 5/16"
+13         NaN                    BULON CON TUERCA 3/8"
+14         NaN                            HIERRO ANGULO
+15         NaN                               MOTOR 1 HP
+16         NaN                               MOTOR 2 HP
+17         NaN                          POLEA MOTOR 1HP
+18         NaN                          POLEA MOTOR 2HP
+19         NaN                         POLEA PARA MANDO
+20         NaN                              PRISIONEROS
+21         NaN                                CORREAS B
+22         NaN                           TEE DE LLEVADO
+23         NaN                         FINAL DE CARRERA
+24         NaN                                CONTACTOR
+25         NaN                           RELEVO TERMICO
+26         NaN                               TIMER GT3A
+27         NaN                        ZOCALO PARA TIMER
+28         NaN                          BOTON SCHNEIDER
+29         NaN                         MANETA SCHNEIDER
+30         NaN               RECORTE CHAPA GALVA DEL 18
+31         NaN  REDUCTORA DE DOSIFICACION (SEGÚN TAMBO)
+32         NaN                                      NaN
+33         NaN                MAQUINARIA INDISPENSABLE:
+34         NaN           SOLDADORA - CARETA - ELECTRODO
+35         NaN                           DEWALT - COPAS
+36         NaN                             ATORNILLADOR
+37         NaN                           JUEGO DE TUBOS
+38         NaN                                  STILSON
+39         NaN                       AMOLADORA - DISCOS
+
+--- Sheet: CHECK LIST EQUIPO FRIO ---
+    Unnamed: 0                           PARTE ELECTRICA:
+0          NaN                                  CONTACTOR
+1          NaN                             RELEVO TERMICO
+2          NaN                                    TERMICA
+3          NaN                 CABLE UNIPOLAR 4 MM - 6 MM
+4          NaN                   PLAQUETA FRENTE BAUDUCCO
+5          NaN                    PLAQUETA FONDO BAUDUCCO
+6          NaN                          ETC-200 CON ZONDA
+7          NaN                            PARTE AGITADOR:
+8          NaN            AGITADOR COMPLETO (SEGÚN TAMBO)
+9          NaN                                    ESTATOR
+10         NaN                                      ROTOR
+11         NaN                                  CAPACITOR
+12         NaN                        CAJA DE CONECCIONES
+13         NaN                            CHAVETA DE INOX
+14         NaN                       TANDEM DE BOLILLEROS
+15         NaN                                        NaN
+16         NaN                 PARTE UNIDAD CONDENSADORA:
+17         NaN                     FORZADOR (SEGÚN TAMBO)
+18         NaN                                  COMPRESOR
+19         NaN          VALVULAS DE SERVICIO DE COMPRESOR
+20         NaN       PRESOSTATO DE ALTA - BAJA AUTOMATICO
+21         NaN              PRESOSTATO DE ALTA AUTOMATICO
+22         NaN              PRESOSTATO DE BAJA AUTOMATICO
+23         NaN             GAS REFRIGERANTE (SEGÚN TAMBO)
+24         NaN             FILTRO MOLECULAR (SEGUN TAMBO)
+25         NaN  VALVULA EXPANSION DANFOSS CON COMPENSADOR
+26         NaN                                    TOBERAS
+27         NaN                          TUERCAS DE BRONCE
+28         NaN   ACCESORIOS DE COBRE (CODO - CUPLA - TEE)
+29         NaN                           VARILLA DE PLATA
+30         NaN                                  DECAPANTE
+31         NaN                             CAÑOS DE COBRE
+32         NaN                                        NaN
+33         NaN                              PARTE LAVADO:
+34         NaN                         BOMBA PERISTALTICA
+35         NaN                ROTOR DE BOMBA PERISTALTICA
+36         NaN     CARTUCHO DE SILICONA BOMBA PERISTATICA
+37         NaN        MANGUERUTAS PARA BOMBA PERISTALTICA
+38         NaN                              SOLENOIDE 24V
+39         NaN                             SOLENOIDE 220V
+40         NaN                      VALVULA DESAGOTE 51MM
+41         NaN         DIAFRAGMA DE VALVULA DESAGOTE 51MM
+42         NaN                                        NaN
+43         NaN                  MAQUINARIA INDISPENSABLE:
+44         NaN                                   AUTOGENA
+45         NaN                             BOMBA DE VACIO
+46         NaN                                    BALANZA
+47         NaN                         DOBLADORAS DE CAÑO
+48         NaN                                  NITROGENO
+49         NaN                                   MANIFOLD
+50         NaN                                 CORTA TUBO
+51         NaN            ACCESORIOS PARA PRUEBA DE PANZA
+52         NaN                                 VIROLADORA
+53         NaN                       LLAVE PARA ROBINETES
+
+--- Sheet: CHECK LIST EQUIPO ORDEÑE ---
+    Unnamed: 0                                    Unnamed: 1
+0          NaN                                  PARTE VACIO:
+1          NaN                  BOMBA DE VACIO (SEGÚN TAMBO)
+2          NaN        MOTOR ELECTRICO (SEGÚN BOMBA DE VACIO)
+3          NaN                              POLEA PARA MOTOR
+4          NaN                     POLEA PARA BOMBA DE VACIO
+5          NaN                                   PRISIONEROS
+6          NaN                                      CHAVETAS
+7          NaN                                       CORREAS
+8          NaN                    ACEITERA 2 PICOS - 3 PICOS
+9          NaN                      MAGUERITAS PARA ACEITERA
+10         NaN              ACCESORIOS GALVANIZADOS ROSCADOS
+11         NaN                      VALVULA ANTIRETONO 75PVC
+12         NaN                          ESCAPE - SILENCIADOR
+13         NaN                                       BULONES
+14         NaN              ACCESORIOS DE GOMA PARA ADMISION
+15         NaN                                           NaN
+16         NaN                                  PARTE LECHE:
+17         NaN                       BOMBA DE LECHE COMPLETA
+18         NaN                         SELLO BOMBA DE LECHE 
+19         NaN                               TAPA INTERMEDIA
+20         NaN                                    GUARNICION
+21         NaN                                       TURBINA
+22         NaN                                           EJE
+23         NaN                                PICO DE SALIDA
+24         NaN                           PLACA DE REFRESCADO
+25         NaN                                           NaN
+26         NaN                                PARTE PULSADO:
+27         NaN  KIT REPARACION DE PULSADORES CORRESPONDIENTE
+28         NaN                             PULSADOR COMPLETO
+29         NaN                            CENTRAL DE PULSADO
+
+--- Sheet: CHECK LIST ELECTRICO ---
+    Unnamed: 0                        Unnamed: 1
+0          NaN                 DISYUNTOR 4 POLOS
+1          NaN                 DISYUNTOR 2 POLOS
+2          NaN         TERMICAS DE 4-3-2-1 POLOS
+3          NaN                         CONTACTOR
+4          NaN                    RELEVO TERMICO
+5          NaN              CONTACTOS AUXILIARES
+6          NaN                       GUARDAMOTOR
+7          NaN             TIMER GT3A CON ZOCALO
+8          NaN  CABLES UNIPOLAR (VARIAS MEDIDAS)
+9          NaN       CABLES TPR (VARIAS MEDIDAS)
+10         NaN                          RIELDING
+11         NaN                        CABLECANAL
+12         NaN                     CAJAS ESTANTO
+13         NaN                   BOTON SCHNEIDER
+14         NaN                  MANETA SCHNEIDER
+15         NaN                      PORTALAMPARA
+16         NaN                              FOCO
+17         NaN                         REFLECTOR
+18         NaN                         TUBOS LED
+19         NaN                       PRENSACABLE
+20         NaN                  FINAL DE CARRERA
+21         NaN                               NaN
+22         NaN         MAQUINARIA INDISPENSABLE:
+23         NaN                            TESTER
+
+--- Sheet: CHECK LIST PLOMERIA ---
+    Unnamed: 0                                              Unnamed: 1
+0          NaN                                                 BOMBAS:
+1          NaN                  BOMBA DE AGUA SUMERGIBLE (SEGÚN TAMBO)
+2          NaN                       ACCESORIOS ROSCADOS DESDE 2" A 1"
+3          NaN                                       ACCESORIOS FUSION
+4          NaN                           LLAVES DE PASO VARIAS MEDIDAS
+5          NaN                           BOMBA DE LAVADO (SEGÚN TAMBO)
+6          NaN                          BOMBA CENTRIFIGA (SEGÚN TAMBO)
+7          NaN  ACCESORIOS ROSCADOS PARA BOMBAS DE LAVADO Y CENTRIFUGA
+8          NaN                                               CONTACTOR
+9          NaN                                          RELEVO TERMICO
+10         NaN                                                 TERMICA
+11         NaN                                                     NaN
+12         NaN                                            TERMOTANQUE:
+13         NaN                              RESISTENCIAS (SEGÚN TAMBO)
+14         NaN                                              TERMOSTATO
+15         NaN                                               CONTACTOR
+16         NaN                                     TERMICAS UNIPOLARES
+17         NaN                          ACCESORIOS PARA SACAR PERDIDAS
+18         NaN                                      COMBISTATO ETC-200
+19         NaN                                                     NaN
+20         NaN                               MAQUINARIA INDISPENSABLE:
+21         NaN                               STINSOL TOTAS LAS MEDIDAS
+22         NaN                                 LLAVE PARA RESISTENCIAS
+23         NaN                                              SACA SARRO
+24         NaN                                                  TEFLON
+25         NaN                                   HIDRO 3 - SELLA ROSCA
