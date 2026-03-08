@@ -175,13 +175,23 @@ const ServiceWorkflow = () => {
                 : draft.operator;
 
             await addService(serviceRecord);
+
+            // Pausa breve para permitir a los WebSockets de Firebase terminar el envío
+            // y evitar que el bloqueo del hilo de ExcelJS interrumpa las transacciones de IndexedDB
+            await new Promise(resolve => setTimeout(resolve, 300));
+
             await exportServiceToExcel(serviceRecord, checklists, resolvedName);
 
-            // Si el guardado y el excel fue exitoso, la borramos de local
-            deleteDraft(draft.id);
+            // Pausa breve para restablecer el hilo
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            // Si el guardado y el excel fue exitoso, la borramos de local (Esperamos a que termine)
+            await deleteDraft(draft.id);
 
             showToast('Service finalizado con éxito. Reporte generado.', 'success');
-            setTimeout(() => navigate('/services'), 1000);
+
+            // Dar tiempo extra para que IndexedDB libere bloqueos antes del cambio de ruta y nuevos onSnapshots
+            setTimeout(() => navigate('/services'), 1500);
         } catch (error) {
             console.error('Error al finalizar:', error);
             showToast('Error al guardar en el servidor. El borrador local está seguro.', 'error');

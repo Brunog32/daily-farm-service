@@ -179,10 +179,17 @@ export const exportServiceToExcel = async (serviceData, allChecklists = null, re
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.setAttribute('download', `Reporte_${serviceData.tamboName.replace(/\s+/g, '_')}_${serviceData.date.replace(/\//g, '-')}.xlsx`);
+
+    // Al usar PWA en mobile a veces el click() frena el de main thread de JS perdiendo callbacks y el render
+    // Lo hacemos asíncrono para no trabar el main thread
     document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    window.URL.revokeObjectURL(url);
+    setTimeout(() => {
+        anchor.click();
+        setTimeout(() => {
+            document.body.removeChild(anchor);
+            window.URL.revokeObjectURL(url);
+        }, 1000); // Darle tiempo a procesar el blob
+    }, 0);
 };
 
 /**
