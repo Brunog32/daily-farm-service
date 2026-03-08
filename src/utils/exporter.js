@@ -92,9 +92,11 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
 
         // Filas de ítems
         if (sectionInfo.items) {
+            let itemCounter = 0;
             sectionInfo.items.forEach((item, index) => {
                 const label = typeof item === 'string' ? item : item.name;
-                const isSubsection = typeof item === 'string';
+                const isMaterialStyle = sectionInfo.group === 'MATERIALS' || sectionId === 'materiales' || sectionTitle.includes('Materiales');
+                const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
 
                 if (isSubsection) {
                     const displayLabel = label.trim().endsWith(':') ? label : `${label.trim()}:`;
@@ -110,13 +112,17 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
                     });
                     subRow.height = 25;
 
-                    // Lógica UNICA OPCIÓN: Si la sección está vacía y tiene respuesta, la agregamos
+                    // Lógica UNICA OPCIÓN: Si la sección está vacía, mostramos la fila para que la cabecera no quede colgada
                     const nextItem = sectionInfo.items[index + 1];
-                    const isTrulyEmpty = !nextItem || typeof nextItem === 'string';
+                    const isNextSubsection = !nextItem || (typeof nextItem === 'string' && (isMaterialStyle || nextItem.trim().endsWith(':')));
 
-                    if (isTrulyEmpty && responses[index] !== undefined) {
-                        const val = responses[index];
-                        const symbol = getStatusSymbol(val);
+                    if (isNextSubsection) {
+                        let finalVal = responses[index];
+                        if (finalVal === undefined || finalVal === null || finalVal === '') {
+                            finalVal = isMaterialStyle ? '0' : '';
+                        }
+
+                        const symbol = getStatusSymbol(finalVal);
                         const dRow = sectionSheet.addRow(['!', 'UNICA OPCIÓN', symbol.text]);
                         const statusCell = dRow.getCell(3);
                         statusCell.alignment = { horizontal: 'center' };
@@ -128,10 +134,12 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
                     return;
                 }
 
+                itemCounter++;
+
                 const val = responses[index];
                 const symbol = getStatusSymbol(val);
 
-                const dRow = sectionSheet.addRow([index + 1, label, symbol.text]);
+                const dRow = sectionSheet.addRow([itemCounter, label, symbol.text]);
 
                 // Estilo especial para la columna de estado
                 const statusCell = dRow.getCell(3);

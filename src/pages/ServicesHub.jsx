@@ -2,24 +2,29 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Play, Clock, ChevronRight, Factory } from 'lucide-react';
-import { useLocalService } from '../hooks/useLocalService';
+import { useDraftService } from '../hooks/useDraftService';
 import { useTambos } from '../hooks/useTambos';
 
 const ServicesHub = () => {
     const navigate = useNavigate();
-    const { drafts, createServiceDraft, deleteDraft } = useLocalService();
+    const { drafts, loading, createServiceDraft, deleteDraft } = useDraftService();
     const { tambos } = useTambos();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTambo, setSelectedTambo] = useState('');
+    const [isCreating, setIsCreating] = useState(false);
 
-    const handleStartNew = () => {
+    const handleStartNew = async () => {
         if (!selectedTambo) {
             alert('Por favor selecciona un establecimiento');
             return;
         }
 
+        setIsCreating(true);
         const tamboObj = tambos.find(t => t.id === selectedTambo);
-        if (!tamboObj) return;
+        if (!tamboObj) {
+            setIsCreating(false);
+            return;
+        }
 
         const userStorage = localStorage.getItem('df_user');
         let operator = 'operador';
@@ -28,7 +33,8 @@ const ServicesHub = () => {
             operator = user.username;
         }
 
-        const newId = createServiceDraft(tamboObj.id, tamboObj.name, operator);
+        const newId = await createServiceDraft(tamboObj.id, tamboObj.name, operator);
+        setIsCreating(false);
         navigate(`/service-flow/${newId}`);
     };
 
@@ -56,7 +62,12 @@ const ServicesHub = () => {
                     Services en Curso
                 </h3>
 
-                {drafts.length === 0 ? (
+                {loading ? (
+                    <div className="empty-drafts" style={{ padding: '32px' }}>
+                        <div className="w-8 h-8 mx-auto border-2 border-slate-100 border-t-[#5558fa] rounded-full animate-spin mb-4" />
+                        <p style={{ fontSize: '14px' }}>Cargando borradores...</p>
+                    </div>
+                ) : drafts.length === 0 ? (
                     <div className="empty-drafts">
                         <Clock size={48} className="icon-empty" />
                         <p>No hay services pendientes</p>
@@ -67,7 +78,7 @@ const ServicesHub = () => {
                             <div key={draft.id} className="draft-card" onClick={() => navigate(`/service-flow/${draft.id}`)}>
                                 <div>
                                     <div className="draft-card-header">
-                                        <div className="draft-badge">Borrador</div>
+                                        <div className="draft-badge">Borrador Nube</div>
                                         <button className="delete-draft-btn" onClick={(e) => { e.stopPropagation(); deleteDraft(draft.id); }} title="Eliminar borrador">
                                             ELIMINAR
                                         </button>
@@ -107,8 +118,10 @@ const ServicesHub = () => {
                         </div>
 
                         <div className="hub-modal-actions">
-                            <button className="btn-cancel-modal" onClick={() => setIsModalOpen(false)}>Cancelar</button>
-                            <button className="btn-primary-jm" style={{ flex: 1 }} onClick={handleStartNew}>Iniciar</button>
+                            <button className="btn-cancel-modal" onClick={() => setIsModalOpen(false)} disabled={isCreating}>Cancelar</button>
+                            <button className="btn-primary-jm" style={{ flex: 1 }} onClick={handleStartNew} disabled={isCreating}>
+                                {isCreating ? 'Iniciando...' : 'Iniciar'}
+                            </button>
                         </div>
                     </div>
                 </div>,

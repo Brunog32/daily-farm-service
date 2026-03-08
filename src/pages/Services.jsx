@@ -219,7 +219,7 @@ const Services = () => {
                                         </div>
                                         <div>
                                             <div className="chrono-date">{service.date}</div>
-                                            <div className="chrono-time">INICIO: {service.startTime}</div>
+                                            <div className="chrono-time">FIN: {service.endTime || service.startTime}</div>
                                         </div>
                                     </div>
                                 </td>
@@ -283,7 +283,7 @@ const Services = () => {
                         <div className="card-mobile-body">
                             <div className="mobile-chrono-row">
                                 <Calendar size={14} className="text-slate-400" />
-                                <span>{service.date} • {service.startTime}</span>
+                                <span>{service.date} • FIN: {service.endTime || service.startTime}</span>
                             </div>
 
                             <div className="mobile-operator-row">

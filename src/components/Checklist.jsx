@@ -1,6 +1,8 @@
 import { Check, X, Minus, Info } from 'lucide-react';
 
 const Checklist = ({ title, items, values, onChange }) => {
+  let itemCounter = 0;
+
   return (
     <div className="checklist-container">
       <div className="checklist-items flex flex-col gap-2">
@@ -15,11 +17,55 @@ const Checklist = ({ title, items, values, onChange }) => {
             const nextItem = items[index + 1];
             const isEmptySubsection = !nextItem || (typeof nextItem === 'string' && nextItem.trim().endsWith(':'));
 
+            const sectionIndices = [];
+            let i = index + 1;
+            while (i < items.length) {
+              if (typeof items[i] === 'string' && items[i].trim().endsWith(':')) break;
+              sectionIndices.push(i);
+              i++;
+            }
+
+            const allOk = sectionIndices.length > 0 && sectionIndices.every(idx => values[idx] === 'ok');
+            const allFail = sectionIndices.length > 0 && sectionIndices.every(idx => values[idx] === 'fail');
+            const allNa = sectionIndices.length > 0 && sectionIndices.every(idx => values[idx] === 'na');
+
+            const handleSectionSelectAll = (sectionStatus) => {
+              sectionIndices.forEach(idx => onChange(idx, sectionStatus));
+            };
+
             return (
               <div key={index} className="subsection-wrapper-refined">
-                <div className="checklist-subsection-header animate-fade-in shadow-soft">
-                  <div className="subsection-accent" />
-                  <span>{itemName}</span>
+                <div className="checklist-subsection-header animate-fade-in shadow-soft" style={{ justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="subsection-accent" />
+                    <span>{itemName}</span>
+                  </div>
+
+                  {!isEmptySubsection && (
+                    <div className="status-button-group-v2 !bg-white header-group-scale" style={{ padding: '2px', transform: 'scale(0.85)', transformOrigin: 'right center', margin: '-4px 0' }}>
+                      <button
+                        className={`status-btn-compact ok ${allOk ? 'active' : 'opacity-70 hover:opacity-100'}`}
+                        onClick={() => handleSectionSelectAll('ok')}
+                        title="Marcar todos OK"
+                      >
+                        <Check size={16} strokeWidth={3} />
+                      </button>
+                      <button
+                        className={`status-btn-compact fail ${allFail ? 'active' : 'opacity-70 hover:opacity-100'}`}
+                        onClick={() => handleSectionSelectAll('fail')}
+                        title="Marcar todos FALLA"
+                      >
+                        <X size={16} strokeWidth={3} />
+                      </button>
+                      <button
+                        className={`status-btn-compact na ${allNa ? 'active' : 'opacity-70 hover:opacity-100'}`}
+                        onClick={() => handleSectionSelectAll('na')}
+                        title="Marcar todos N/A"
+                      >
+                        <Minus size={16} strokeWidth={3} />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 {isEmptySubsection && (
                   <div className="checklist-item-row animate-fade-in !bg-[#fafafa] border-dashed">
@@ -57,10 +103,12 @@ const Checklist = ({ title, items, values, onChange }) => {
             );
           }
 
+          itemCounter++;
+
           return (
             <div key={index} className="checklist-item-row animate-fade-in">
               <div className="row-content-inner">
-                <div className="row-number-pill">{index + 1}</div>
+                <div className="row-number-pill">{itemCounter}</div>
                 <span className="row-text-main">{itemName}</span>
               </div>
 
@@ -138,8 +186,10 @@ const Checklist = ({ title, items, values, onChange }) => {
           .checklist-item-row { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; }
           .row-content-inner { margin-right: 0; }
           .row-text-main { font-size: 0.875rem; }
-          .status-button-group-v2 { display: grid; grid-template-columns: 1fr 1fr 1fr; width: 100%; gap: 4px; }
-          .status-btn-compact { width: 100%; height: 44px; }
+          .checklist-item-row .status-button-group-v2 { display: grid; grid-template-columns: 1fr 1fr 1fr; width: 100%; gap: 4px; }
+          .checklist-item-row .status-btn-compact { width: 100%; height: 44px; }
+          .header-group-scale { display: flex !important; width: auto !important; }
+          .header-group-scale .status-btn-compact { width: 30px !important; height: 30px !important; }
           .checklist-subsection-header { margin: 24px 0 8px 0; padding: 10px 16px; }
           .checklist-subsection-header span { font-size: 0.75rem; }
         }

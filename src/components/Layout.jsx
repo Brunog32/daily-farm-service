@@ -76,7 +76,7 @@ const Layout = () => {
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo-circle">
-            <Cow size={26} color="#111" strokeWidth={2.5} />
+            <Cow size={36} color="#111" strokeWidth={2.5} />
           </div>
           <div className="brand-text">
             <h2 className="logo-text">OJ Service</h2>

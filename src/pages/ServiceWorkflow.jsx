@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Save, CheckCircle2, Box, Zap, Snowflake, Utensils, Droplets, Gauge, ShieldAlert, Activity, Layers, ClipboardCheck, AlertTriangle, X } from 'lucide-react';
-import { useLocalService } from '../hooks/useLocalService';
+import { Save, CheckCircle2, Box, Zap, Snowflake, Utensils, Droplets, Gauge, ShieldAlert, Activity, Layers, ClipboardCheck, AlertTriangle, X, Minus } from 'lucide-react';
+import { useDraftService } from '../hooks/useDraftService';
 import { useServices } from '../hooks/useServices';
 import { useChecklists } from '../hooks/useChecklists';
 import Checklist from '../components/Checklist';
@@ -17,7 +17,7 @@ const STAGE_KEYS = {
 const ServiceWorkflow = () => {
     const { serviceId } = useParams();
     const navigate = useNavigate();
-    const { getDraftById, updateStageData, deleteDraft } = useLocalService();
+    const { getDraftById, updateStageData, deleteDraft, loading: draftsLoading } = useDraftService();
     const { addService } = useServices();
     const { checklists, loading: loadingChecklists } = useChecklists();
 
@@ -34,6 +34,7 @@ const ServiceWorkflow = () => {
     };
 
     useEffect(() => {
+        if (draftsLoading) return;
         const loadedDraft = getDraftById(serviceId);
         if (loadedDraft) {
             setDraft(loadedDraft);
@@ -41,7 +42,7 @@ const ServiceWorkflow = () => {
             showToast('No se encontró el borrador del service.', 'error');
             navigate('/services-hub');
         }
-    }, [serviceId]);
+    }, [serviceId, draftsLoading]);
 
     useEffect(() => {
         if (!loadingChecklists && checklists.length > 0) {
@@ -54,21 +55,19 @@ const ServiceWorkflow = () => {
         }
     }, [loadingChecklists, checklists, activeGroup]);
 
-    const handleStatusChange = (sectionId, itemIndex, status) => {
+    const handleBulkStatusChange = (sectionId, updates) => {
         const stageKey = STAGE_KEYS[activeGroup];
 
-        // Auto update local storage
         updateStageData(serviceId, stageKey, {
             sections: {
                 ...(draft[stageKey].data.sections || {}),
                 [sectionId]: {
                     ...((draft[stageKey].data.sections && draft[stageKey].data.sections[sectionId]) || {}),
-                    [itemIndex]: status
+                    ...updates
                 }
             }
-        }, 'IN_PROGRESS');
+        }, 'IN_PROGRESS', draft);
 
-        // Update local state for immediate UI reflection
         setDraft(prev => ({
             ...prev,
             [stageKey]: {
@@ -80,12 +79,16 @@ const ServiceWorkflow = () => {
                         ...(prev[stageKey].data.sections || {}),
                         [sectionId]: {
                             ...((prev[stageKey].data.sections && prev[stageKey].data.sections[sectionId]) || {}),
-                            [itemIndex]: status
+                            ...updates
                         }
                     }
                 }
             }
         }));
+    };
+
+    const handleStatusChange = (sectionId, itemIndex, status) => {
+        handleBulkStatusChange(sectionId, { [itemIndex]: status });
     };
 
     const isServiceReadyToFinish = () => {
@@ -101,24 +104,37 @@ const ServiceWorkflow = () => {
             const stageData = draft[stageKey]?.data?.sections || {};
             const responses = stageData[section.id] || {};
 
-            // Lógica de conteo: Solo sumamos ítems reales, o subsecciones vacías (que ahora tienen UNICA OPCION virtual)
+            const isMaterialStyle = section.group === 'MATERIALS' || section.id === 'materiales' || section.title?.includes('Materiales');
+
+            // Excluir listas de materiales de la validación estricta
+            if (isMaterialStyle) return;
+
             let requiredCount = 0;
+            let validResponsesCount = 0;
             section.items.forEach((item, idx) => {
-                const isSubsection = typeof item === 'string'; // Consistente con MaterialsChecklist
+                const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
+
+                let isCountable = false;
                 if (!isSubsection) {
-                    requiredCount++;
+                    isCountable = true;
                 } else {
                     const next = section.items[idx + 1];
-                    const isTrulyEmpty = !next || typeof next === 'string';
-                    if (isTrulyEmpty) requiredCount++;
+                    const isNextSubsection = !next || (typeof next === 'string' && (isMaterialStyle || next.trim().endsWith(':')));
+                    if (isNextSubsection) isCountable = true;
+                }
+
+                if (isCountable) {
+                    requiredCount++;
+                    const val = responses[idx];
+                    if (val !== undefined && val !== null && val !== '') {
+                        validResponsesCount++;
+                    }
                 }
             });
 
-            const responsesCount = Object.values(responses).filter(v => v !== undefined && v !== null && v !== '').length;
-
-            if (responsesCount < requiredCount) {
+            if (validResponsesCount < requiredCount) {
                 isValid = false;
-                missingDetails.push(`Faltan ${requiredCount - responsesCount} ítems en "${section.title}"`);
+                missingDetails.push(`Faltan ${requiredCount - validResponsesCount} ítems en "${section.title}"`);
             }
         });
 
@@ -201,24 +217,35 @@ const ServiceWorkflow = () => {
         const stageData = draft[stageKey]?.data?.sections || {};
         const responses = stageData[section.id] || {};
 
+        const isMaterialStyle = section.group === 'MATERIALS' || section.id === 'materiales' || section.title?.includes('Materiales');
+
         let requiredCount = 0;
+        let validResponsesCount = 0;
         section.items.forEach((item, idx) => {
-            const isSubsection = typeof item === 'string';
+            const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
+
+            let isCountable = false;
             if (!isSubsection) {
-                requiredCount++;
+                isCountable = true;
             } else {
                 const next = section.items[idx + 1];
-                const isTrulyEmpty = !next || typeof next === 'string';
-                if (isTrulyEmpty) requiredCount++;
+                const isNextSubsection = !next || (typeof next === 'string' && (isMaterialStyle || next.trim().endsWith(':')));
+                if (isNextSubsection) isCountable = true;
+            }
+
+            if (isCountable) {
+                requiredCount++;
+                const val = responses[idx];
+                if (val !== undefined && val !== null && val !== '') {
+                    validResponsesCount++;
+                }
             }
         });
 
-        const responsesCount = Object.values(responses).filter(v => v !== undefined && v !== null && v !== '').length;
-
         return {
             itemsCount: requiredCount,
-            responses: responsesCount,
-            isCompleted: requiredCount > 0 && responsesCount >= requiredCount
+            responses: validResponsesCount,
+            isCompleted: requiredCount > 0 && validResponsesCount >= requiredCount
         };
     };
 
@@ -230,7 +257,7 @@ const ServiceWorkflow = () => {
                 <div className="top-info">
                     <div className="execution-badge">
                         <Activity size={12} color="#5558fa" />
-                        <span>Ejecutando Localmente</span>
+                        <span>Ejecutando en Nube (Offline Soportado)</span>
                     </div>
                     <h2>{draft.tamboName}</h2>
                 </div>
@@ -309,22 +336,85 @@ const ServiceWorkflow = () => {
                     {activeSection ? (
                         <div key={activeSection.id} className="checklist-render-card animate-fade-in">
                             <div className="checklist-render-header">
-                                <div>
-                                    <h3>{activeSection.title}</h3>
-                                    {activeSection.title !== 'Materiales en Service' && (
-                                        <p>
-                                            {activeSection.items.reduce((acc, item, idx) => {
-                                                const isSubsection = typeof item === 'string';
-                                                if (!isSubsection) return acc + 1;
-                                                const next = activeSection.items[idx + 1];
-                                                if (!next || typeof next === 'string') return acc + 1;
-                                                return acc;
-                                            }, 0)} puntos de verificación
-                                        </p>
-                                    )}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                    <div className="icon-badge-centered" style={{ background: '#f8f9fa', color: '#5558fa' }}>
+                                        {getSectionIcon(activeSection.title, activeSection.group)}
+                                    </div>
+                                    <div>
+                                        <h3>{activeSection.title}</h3>
+                                        {activeSection.title !== 'Materiales en Service' && (
+                                            <p>
+                                                {activeSection.items.reduce((acc, item, idx) => {
+                                                    const isMaterialStyle = activeSection.group === 'MATERIALS' || activeSection.id === 'materiales' || activeSection.title?.includes('Materiales');
+                                                    const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
+
+                                                    if (!isSubsection) return acc + 1;
+                                                    const next = activeSection.items[idx + 1];
+                                                    const isNextSubsection = !next || (typeof next === 'string' && (isMaterialStyle || next.trim().endsWith(':')));
+                                                    if (isNextSubsection) return acc + 1;
+                                                    return acc;
+                                                }, 0)} puntos de verificación
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="icon-badge-centered" style={{ background: '#f8f9fa', color: '#94a3b8' }}>
-                                    {getSectionIcon(activeSection.title, activeSection.group)}
+                                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px', flexWrap: 'nowrap' }}>
+                                    {/* GLOBAL SELECT ALL */}
+                                    {activeSection.title !== 'Materiales en Service' && (() => {
+                                        const isMaterialStyle = activeSection.group === 'MATERIALS' || activeSection.id === 'materiales' || activeSection.title?.includes('Materiales');
+                                        const responses = draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {};
+
+                                        const countableIndices = [];
+                                        activeSection.items.forEach((item, idx) => {
+                                            const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
+                                            if (!isSubsection) {
+                                                countableIndices.push(idx);
+                                            } else {
+                                                const next = activeSection.items[idx + 1];
+                                                const isNextSubsection = !next || (typeof next === 'string' && (isMaterialStyle || next.trim().endsWith(':')));
+                                                if (isNextSubsection) countableIndices.push(idx);
+                                            }
+                                        });
+
+                                        const allOk = countableIndices.length > 0 && countableIndices.every(idx => responses[idx] === 'ok');
+                                        const allFail = countableIndices.length > 0 && countableIndices.every(idx => responses[idx] === 'fail');
+                                        const allNa = countableIndices.length > 0 && countableIndices.every(idx => responses[idx] === 'na');
+
+                                        const handleGlobalSelect = (status) => {
+                                            const updates = {};
+                                            countableIndices.forEach(idx => updates[idx] = status);
+                                            handleBulkStatusChange(activeSection.id, updates);
+                                        };
+
+                                        return (
+                                            <div className="status-button-group-v2 !bg-white" style={{ display: 'flex', flexDirection: 'row', padding: '2px', transform: 'scale(0.9)', margin: '-4px 0', flexShrink: 0 }}>
+                                                <button
+                                                    className={`status-btn-compact ok ${allOk ? 'active' : 'opacity-70 hover:opacity-100'}`}
+                                                    onClick={() => handleGlobalSelect('ok')}
+                                                    title="Marcar toda la lista OK"
+                                                    style={{ width: '32px', height: '32px' }}
+                                                >
+                                                    <CheckCircle2 size={16} strokeWidth={3} />
+                                                </button>
+                                                <button
+                                                    className={`status-btn-compact fail ${allFail ? 'active' : 'opacity-70 hover:opacity-100'}`}
+                                                    onClick={() => handleGlobalSelect('fail')}
+                                                    title="Marcar toda la lista FALLA"
+                                                    style={{ width: '32px', height: '32px' }}
+                                                >
+                                                    <X size={16} strokeWidth={3} />
+                                                </button>
+                                                <button
+                                                    className={`status-btn-compact na ${allNa ? 'active' : 'opacity-70 hover:opacity-100'}`}
+                                                    onClick={() => handleGlobalSelect('na')}
+                                                    title="Marcar toda la lista N/A"
+                                                    style={{ width: '32px', height: '32px' }}
+                                                >
+                                                    <Minus size={16} strokeWidth={3} />
+                                                </button>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
 
@@ -341,7 +431,13 @@ const ServiceWorkflow = () => {
                                         title={activeSection.title}
                                         items={activeSection.items}
                                         values={draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {}}
-                                        onChange={(idx, val) => handleStatusChange(activeSection.id, idx, val)}
+                                        onChange={(idxOrObj, val) => {
+                                            if (typeof idxOrObj === 'object') {
+                                                handleBulkStatusChange(activeSection.id, idxOrObj);
+                                            } else {
+                                                handleStatusChange(activeSection.id, idxOrObj, val);
+                                            }
+                                        }}
                                     />
                                 )}
                             </div>

@@ -74,7 +74,7 @@ const Login = () => {
             <div className="login-container animate-fade-in shadow-large">
                 <div className="login-branding">
                     <div className="logo-box-light">
-                        <Cow size={36} color="#111" />
+                        <Cow size={53} color="#111" />
                     </div>
                     <div className="brand-labels">
                         <h1>OJ Service</h1>
