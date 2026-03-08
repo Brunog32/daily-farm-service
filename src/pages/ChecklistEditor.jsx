@@ -554,7 +554,7 @@ const ChecklistEditor = () => {
                 .shadow-soft { box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
                 .shadow-large { box-shadow: 0 20px 60px rgba(0,0,0,0.05); }
 
-                @media (max-width: 768px) {
+                @media (max-width: 1024px) {
                     .editor-v9 { padding-top: 10px; padding-bottom: 120px; }
                     .row-header { display: none !important; }
                     

@@ -180,7 +180,7 @@ const ServicesHub = () => {
                 .btn-cancel-modal:hover { background: #f1f5f9; color: #1e293b; }
                 .hub-modal-actions .btn-primary-jm { padding: 0 40px; height: 44px; font-size: 14px; box-shadow: 0 4px 12px rgba(85,88,250,0.2) !important; }
                 
-                @media (max-width: 768px) {
+                @media (max-width: 1024px) {
                     .services-hub-container { padding: 0 4px; }
                     .hub-header { margin-bottom: 24px; }
                     .hub-header h2 { font-size: 1.5rem; }

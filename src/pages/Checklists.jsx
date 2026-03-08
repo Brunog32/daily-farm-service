@@ -110,7 +110,7 @@ const Checklists = () => {
 
         .empty-checklists-state { padding: 120px 40px; text-align: center; background: #fafafa; border-radius: 40px; border: 3px dashed #f0f0f0; display: flex; flex-direction: column; align-items: center; }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .sections-container { gap: 40px; }
           .group-header-refined { margin-bottom: 20px; }
           .checklist-grid-layout { grid-template-columns: 1fr; gap: 16px; }

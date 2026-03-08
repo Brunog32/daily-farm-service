@@ -142,7 +142,7 @@ const MaterialsChecklist = ({ items, values, onChange }) => {
 
         .qty-unit { font-size: 8px; font-weight: 900; color: #ccc; margin-top: 2px; }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .material-row-refined { flex-direction: column; align-items: stretch; gap: 16px; padding: 16px; }
           .material-info-part { gap: 12px; }
           .material-name-heading { font-size: 0.95rem; }

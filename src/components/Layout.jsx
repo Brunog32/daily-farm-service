@@ -212,7 +212,24 @@ const Layout = () => {
 
         .mobile-nav { display: none; }
 
-        @media (max-width: 768px) {
+        @media (min-width: 1025px) and (max-width: 1366px) {
+          .sidebar { width: 88px; min-width: 88px; max-width: 88px; align-items: center; }
+          .sidebar-header { padding: 0; justify-content: center; margin-bottom: 40px; }
+          .brand-text { display: none; }
+          
+          .sidebar-nav { padding: 0 12px; align-items: center; width: 100%; }
+          .nav-item { padding: 14px 0; width: 100%; justify-content: center; border-radius: 12px; }
+          .nav-item span { display: none; }
+          .icon-wrapper { width: auto; height: auto; }
+          
+          .logout-btn { padding: 14px 0; justify-content: center; }
+          .logout-btn span { display: none; }
+          
+          .top-header { padding: 24px 40px; }
+          .content-container { padding: 30px 40px; }
+        }
+
+        @media (max-width: 1024px) {
           .sidebar { display: none; }
           .top-header { padding: 16px 20px; }
           .header-title { font-size: 1.25rem; }

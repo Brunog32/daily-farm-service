@@ -616,7 +616,7 @@ const ServiceWorkflow = () => {
                 }
                 .animate-fade-in { animation: fadeScaleIn 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
                 
-                @media (max-width: 768px) {
+                @media (max-width: 1024px) {
                     .service-execution-refined { padding: 0 4px; }
                     .execution-top-bar { flex-direction: column; align-items: stretch; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; text-align: center; }
                     .execution-badge { justify-content: center; }
@@ -664,6 +664,7 @@ const ServiceWorkflow = () => {
                         line-height: 1.2;
                         text-align: left;
                     }
+                    .sub-tab-title .icon-wrapper { width: 25px; }
                     .sub-tab-title .icon-wrapper svg { width: 14px; height: 14px; }
                     .sub-tab-progress { margin-top: auto; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.03); }
                     .sub-tab-progress span { font-size: 9px; font-weight: 900; }

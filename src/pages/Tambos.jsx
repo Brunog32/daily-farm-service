@@ -192,7 +192,7 @@ const Tambos = () => {
 
         .mobile-only { display: none; }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .tambos-container { padding-bottom: 80px; }
           .desktop-only { display: none !important; }
           .mobile-only { display: block; }

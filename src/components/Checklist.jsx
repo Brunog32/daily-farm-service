@@ -182,7 +182,7 @@ const Checklist = ({ title, items, values, onChange }) => {
         .status-btn-compact.fail.active { background: #ef4444; color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
         .status-btn-compact.na.active { background: #64748b; color: #fff; box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2); }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .checklist-item-row { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; }
           .row-content-inner { margin-right: 0; }
           .row-text-main { font-size: 0.875rem; }

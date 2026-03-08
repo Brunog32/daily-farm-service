@@ -469,7 +469,7 @@ const Services = () => {
                  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
                  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
                  
-                 @media (max-width: 768px) {
+                 @media (max-width: 1024px) {
                      .desktop-only { display: none; }
                      .mobile-only { display: block; }
                      
