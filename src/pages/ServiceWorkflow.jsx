@@ -174,24 +174,25 @@ const ServiceWorkflow = () => {
                 ? `${currentUser.name} ${currentUser.lastName}`
                 : draft.operator;
 
+            // 1. Guardar en BD (online o en IndexedDB para luego sincronizar)
             await addService(serviceRecord);
 
-            // Pausa breve para permitir a los WebSockets de Firebase terminar el envío
-            // y evitar que el bloqueo del hilo de ExcelJS interrumpa las transacciones de IndexedDB
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            await exportServiceToExcel(serviceRecord, checklists, resolvedName);
-
-            // Pausa breve para restablecer el hilo
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            // Si el guardado y el excel fue exitoso, la borramos de local (Esperamos a que termine)
+            // 2. Borrar de borrador local. Se espera para confirmar.
             await deleteDraft(draft.id);
 
-            showToast('Service finalizado con éxito. Reporte generado.', 'success');
+            showToast('Service guardado con éxito. Generando reporte...', 'success');
 
-            // Dar tiempo extra para que IndexedDB libere bloqueos antes del cambio de ruta y nuevos onSnapshots
-            setTimeout(() => navigate('/services'), 1500);
+            // 3. Navegar inmediatamente antes de que el celular intercepte las descargas
+            navigate('/services');
+
+            // 4. Dejar el proceso de exportar para el final, de forma asíncrona y separada, 
+            // ya que algunos celulares bloquean el sistema al descargar
+            setTimeout(() => {
+                exportServiceToExcel(serviceRecord, checklists, resolvedName).catch(err => {
+                    console.log("Exportar archivo en background cancelado o con error:", err);
+                });
+            }, 1000);
+
         } catch (error) {
             console.error('Error al finalizar:', error);
             showToast('Error al guardar en el servidor. El borrador local está seguro.', 'error');

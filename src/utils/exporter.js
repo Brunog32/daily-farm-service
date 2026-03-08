@@ -172,23 +172,43 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
 export const exportServiceToExcel = async (serviceData, allChecklists = null, resolvedOperatorName = null) => {
     const workbook = generateServiceWorkbook(serviceData, allChecklists, resolvedOperatorName);
 
-    // --- DESCARGA ---
+    // --- DESCARGA / COMPARTIR ---
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const fileName = `Reporte_${serviceData.tamboName.replace(/\s+/g, '_')}_${serviceData.date.replace(/\//g, '-')}.xlsx`;
+
+    // 1. Usar Web Share API nativa si está disponible (Salva la PWA en iOS/Android de trabarse)
+    // El a.click() en celulares rompe el event loop de React y Firebase se desconecta!
+    if (navigator.share && navigator.canShare) {
+        try {
+            const file = new File([blob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Reporte Técnico OJ Service',
+                    text: `Service de Tambo: ${serviceData.tamboName} - Operador: ${resolvedOperatorName || serviceData.operator}`
+                });
+                return; // Si abre el Share Sheet nativo, salimos para no hacer trigger del HTML tag
+            }
+        } catch (err) {
+            console.log('Error o cancelación en el Share nativo:', err);
+            return; // Si el usuario cancela, no forzamos descarga de fallback
+        }
+    }
+
+    // 2. Fallback clásico para Desktop
     const url = window.URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.setAttribute('download', `Reporte_${serviceData.tamboName.replace(/\s+/g, '_')}_${serviceData.date.replace(/\//g, '-')}.xlsx`);
+    anchor.setAttribute('download', fileName);
 
-    // Al usar PWA en mobile a veces el click() frena el de main thread de JS perdiendo callbacks y el render
-    // Lo hacemos asíncrono para no trabar el main thread
     document.body.appendChild(anchor);
     setTimeout(() => {
         anchor.click();
         setTimeout(() => {
             document.body.removeChild(anchor);
             window.URL.revokeObjectURL(url);
-        }, 1000); // Darle tiempo a procesar el blob
+        }, 1000);
     }, 0);
 };
 
