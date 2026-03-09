@@ -175,12 +175,27 @@ const ServiceWorkflow = () => {
                 : draft.operator;
 
             // 1. Guardar en BD (online o en IndexedDB para luego sincronizar)
-            await addService(serviceRecord);
+            const savePromise = addService(serviceRecord);
+            if (navigator.onLine) {
+                try {
+                    // Esperar máximo 5 segundos al servidor, si no responde, asumir guardado local y avanzar
+                    await Promise.race([
+                        savePromise,
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+                    ]);
+                } catch (err) {
+                    console.warn('Conexión lenta o error de red, guardado localmente (sincronizará después):', err);
+                }
+            } else {
+                // Offline: no esperamos a que termine el promise (Firebase la resolverá al reconectar)
+                // Simulamos un pequeño delay visual para el usuario
+                await new Promise(resolve => setTimeout(resolve, 600));
+            }
 
             // 2. Borrar de borrador local. Se espera para confirmar.
             await deleteDraft(draft.id);
 
-            showToast('Service guardado con éxito. Generando reporte...', 'success');
+            showToast(navigator.onLine ? 'Service guardado con éxito. Generando reporte...' : 'Service guardado en modo offline. Generando reporte...', 'success');
 
             // 3. Navegar inmediatamente antes de que el celular intercepte las descargas
             navigate('/services');
