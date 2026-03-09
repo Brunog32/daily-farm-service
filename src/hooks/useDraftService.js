@@ -33,8 +33,11 @@ export const useDraftService = () => {
             materials: { status: 'PENDING', data: { sections: {} } },
             execution: { status: 'PENDING', data: { sections: {} } },
         };
-        await setDoc(doc(db, 'servicesTemp', id), newService);
-        return id; // Retorna la promesa pero en el flow tal vez haya que hacer await al navigate. O navegamos con el ID igual
+        // No hacer await para evitar que se congele estando offline.
+        setDoc(doc(db, 'servicesTemp', id), newService).catch(err => {
+            console.error("Error creating draft offline:", err);
+        });
+        return id;
     };
 
     const getDraftById = (id) => {
@@ -43,9 +46,11 @@ export const useDraftService = () => {
 
     const updateServiceDraft = async (id, updates) => {
         const docRef = doc(db, 'servicesTemp', id);
-        await updateDoc(docRef, {
+        updateDoc(docRef, {
             ...updates,
             updatedAt: new Date().toISOString()
+        }).catch(err => {
+            console.error("Error updating draft:", err);
         });
     };
 
@@ -77,12 +82,15 @@ export const useDraftService = () => {
             clearTimeout(debounceTimers[id]);
         }
 
-        debounceTimers[id] = setTimeout(async () => {
+        debounceTimers[id] = setTimeout(() => {
             try {
                 const docRef = doc(db, 'servicesTemp', id);
                 const updates = { ...pendingUpdates[id] };
                 delete pendingUpdates[id];
-                await updateDoc(docRef, updates);
+                // No await to avoid blocking offline queues and properly continue
+                updateDoc(docRef, updates).catch(err => {
+                    console.error("Error guardando draft en Firestore", err);
+                });
             } catch (error) {
                 console.error("Error guardando draft en Firestore", error);
             }
@@ -97,7 +105,9 @@ export const useDraftService = () => {
         if (pendingUpdates[id]) {
             delete pendingUpdates[id];
         }
-        await deleteDoc(doc(db, 'servicesTemp', id));
+        deleteDoc(doc(db, 'servicesTemp', id)).catch(err => {
+            console.error("Error deleting draft:", err);
+        });
     };
 
     return {

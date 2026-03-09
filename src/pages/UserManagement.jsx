@@ -132,8 +132,8 @@ const UserManagement = () => {
                         <table className="tambos-styled-table">
                             <thead>
                                 <tr>
-                                    <th style={{ width: '40%' }} className="pl-6">Usuario</th>
-                                    <th style={{ width: '25%' }}>Credenciales</th>
+                                    <th style={{ width: '40%' }} className="pl-6">Nombre</th>
+                                    <th style={{ width: '25%' }}>Username</th>
                                     <th style={{ width: '15%' }}>Rol de Acceso</th>
                                     <th style={{ width: '20%', position: 'relative' }}>
                                         <button
@@ -187,151 +187,158 @@ const UserManagement = () => {
                         </table>
                     </div>
                 </div>
-            )}
+            )
+            }
 
-            {activeTab === 'mantenimiento' && (
-                <div className="animate-fade-in pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mt-8">
-                        {/* CARD RESET DATA */}
-                        <div className={`mantenimiento-card ${resetStep === 1 ? 'border-orange-200 bg-orange-50/30' : ''}`}>
-                            <div className="maint-card-icon" style={{ background: '#fef2f2', color: '#ef4444' }}>
-                                <RefreshCw size={24} className={resetting ? 'animate-spin' : ''} />
+            {
+                activeTab === 'mantenimiento' && (
+                    <div className="animate-fade-in pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mt-8">
+                            {/* CARD RESET DATA */}
+                            <div className={`mantenimiento-card ${resetStep === 1 ? 'border-orange-200 bg-orange-50/30' : ''}`}>
+                                <div className="maint-card-icon" style={{ background: '#fef2f2', color: '#ef4444' }}>
+                                    <RefreshCw size={24} className={resetting ? 'animate-spin' : ''} />
+                                </div>
+                                <div className="maint-card-body">
+                                    <h4>Restablecer Base de Datos</h4>
+                                    <p>Sincroniza todas las listas de control con el modelo maestro del sistema.</p>
+                                    <button
+                                        className={`maint-action-btn ${resetting ? 'processing' : resetStep === 1 ? 'confirm' : resetStep === 2 ? 'success' : 'danger'}`}
+                                        onClick={handleReset}
+                                        disabled={resetting || resetStep === 2}
+                                    >
+                                        {resetting ? 'Procesando...' : resetStep === 1 ? '¡Confirma Ahora!' : resetStep === 2 ? 'Sincronizado' : 'Ejecutar Reset'}
+                                    </button>
+                                </div>
                             </div>
-                            <div className="maint-card-body">
-                                <h4>Restablecer Base de Datos</h4>
-                                <p>Sincroniza todas las listas de control con el modelo maestro del sistema.</p>
-                                <button
-                                    className={`maint-action-btn ${resetting ? 'processing' : resetStep === 1 ? 'confirm' : resetStep === 2 ? 'success' : 'danger'}`}
-                                    onClick={handleReset}
-                                    disabled={resetting || resetStep === 2}
-                                >
-                                    {resetting ? 'Procesando...' : resetStep === 1 ? '¡Confirma Ahora!' : resetStep === 2 ? 'Sincronizado' : 'Ejecutar Reset'}
-                                </button>
-                            </div>
-                        </div>
 
-                        {/* CARD RECOVER ADMIN */}
-                        <div className="mantenimiento-card">
-                            <div className="maint-card-icon" style={{ background: '#f0f9ff', color: '#0ea5e9' }}>
-                                <ShieldCheck size={24} />
-                            </div>
-                            <div className="maint-card-body">
-                                <h4>Recuperar Acceso Admin</h4>
-                                <p>Crea el usuario administrador por defecto si fue borrado accidentalmente.</p>
-                                <button
-                                    className="maint-action-btn default"
-                                    onClick={async () => {
-                                        const { seedDefaultAdmin } = await import('../services/seeder');
-                                        const res = await seedDefaultAdmin();
-                                        if (res) {
-                                            alert('Acceso asegurado exitosamente.');
-                                            fetchUsers();
-                                        } else {
-                                            alert('El usuario administrativo ya existe.');
-                                        }
-                                    }}
-                                >
-                                    <span>Restaurar Cuenta</span>
-                                </button>
+                            {/* CARD RECOVER ADMIN */}
+                            <div className="mantenimiento-card">
+                                <div className="maint-card-icon" style={{ background: '#f0f9ff', color: '#0ea5e9' }}>
+                                    <ShieldCheck size={24} />
+                                </div>
+                                <div className="maint-card-body">
+                                    <h4>Recuperar Acceso Admin</h4>
+                                    <p>Crea el usuario administrador por defecto si fue borrado accidentalmente.</p>
+                                    <button
+                                        className="maint-action-btn default"
+                                        onClick={async () => {
+                                            const { seedDefaultAdmin } = await import('../services/seeder');
+                                            const res = await seedDefaultAdmin();
+                                            if (res) {
+                                                alert('Acceso asegurado exitosamente.');
+                                                fetchUsers();
+                                            } else {
+                                                alert('El usuario administrativo ya existe.');
+                                            }
+                                        }}
+                                    >
+                                        <span>Restaurar Cuenta</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* MODAL CREAR USUARIO */}
-            {isNewUserModalOpen && createPortal(
-                <div className="modal-overlay animate-fade-in" onClick={() => setIsNewUserModalOpen(false)}>
-                    <div className="modal-card-reborn animate-slide-up" onClick={e => e.stopPropagation()}>
-                        <button className="close-modal-btn" onClick={() => setIsNewUserModalOpen(false)}>
-                            <X size={20} strokeWidth={2.5} />
-                        </button>
-                        <div className="mb-6">
-                            <h3 className="text-xl font-black text-slate-800">Nuevo Usuario</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Alta de Personal Técnico</p>
+            {
+                isNewUserModalOpen && createPortal(
+                    <div className="modal-overlay animate-fade-in" onClick={() => setIsNewUserModalOpen(false)}>
+                        <div className="modal-card-reborn animate-slide-up" onClick={e => e.stopPropagation()}>
+                            <button className="close-modal-btn" onClick={() => setIsNewUserModalOpen(false)}>
+                                <X size={20} strokeWidth={2.5} />
+                            </button>
+                            <div className="mb-6">
+                                <h3 className="text-xl font-black text-slate-800">Nuevo Usuario</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Alta de Personal Técnico</p>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="input-group-jm">
+                                        <label>Nombre</label>
+                                        <div className="input-with-icon-jm">
+                                            <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                                        </div>
+                                    </div>
+                                    <div className="input-group-jm">
+                                        <label>Apellido</label>
+                                        <div className="input-with-icon-jm">
+                                            <input type="text" required value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="input-group-jm">
+                                    <label>Usuario (Login)</label>
+                                    <div className="input-with-icon-jm">
+                                        <AtSign size={16} />
+                                        <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
+                                    </div>
+                                </div>
+                                <div className="input-group-jm">
+                                    <label>Contraseña</label>
+                                    <div className="input-with-icon-jm">
+                                        <Key size={16} />
+                                        <input type="password" required minLength="6" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                                    </div>
+                                </div>
+                                <div className="input-group-jm">
+                                    <label>Rol de Acceso</label>
+                                    <select className="select-jm-modern" value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
+                                        <option value="operator">Operador Técnico</option>
+                                        <option value="admin">Administrador Central</option>
+                                    </select>
+                                </div>
+
+                                <div className="modal-actions-container">
+                                    <button type="submit" className="btn-primary-jm px-10 h-[44px] text-sm">
+                                        <Save size={16} />
+                                        <span>Guardar</span>
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-
-                        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="input-group-jm">
-                                    <label>Nombre</label>
-                                    <div className="input-with-icon-jm">
-                                        <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
-                                    </div>
-                                </div>
-                                <div className="input-group-jm">
-                                    <label>Apellido</label>
-                                    <div className="input-with-icon-jm">
-                                        <input type="text" required value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="input-group-jm">
-                                <label>Usuario (Login)</label>
-                                <div className="input-with-icon-jm">
-                                    <AtSign size={16} />
-                                    <input type="text" required value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
-                                </div>
-                            </div>
-                            <div className="input-group-jm">
-                                <label>Contraseña</label>
-                                <div className="input-with-icon-jm">
-                                    <Key size={16} />
-                                    <input type="password" required minLength="6" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
-                                </div>
-                            </div>
-                            <div className="input-group-jm">
-                                <label>Rol de Acceso</label>
-                                <select className="select-jm-modern" value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
-                                    <option value="operator">Operador Técnico</option>
-                                    <option value="admin">Administrador Central</option>
-                                </select>
-                            </div>
-
-                            <div className="modal-actions-container">
-                                <button type="submit" className="btn-primary-jm px-10 h-[44px] text-sm">
-                                    <Save size={16} />
-                                    <span>Guardar</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>,
-                document.body
-            )}
+                    </div>,
+                    document.body
+                )
+            }
 
             {/* MODAL EDITAR PASS */}
-            {editingUser && createPortal(
-                <div className="modal-overlay animate-fade-in" onClick={() => setEditingUser(null)}>
-                    <div className="modal-card-reborn animate-slide-up" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
-                        <button className="close-modal-btn" onClick={() => setEditingUser(null)}>
-                            <X size={20} strokeWidth={2.5} />
-                        </button>
-                        <div className="mb-6">
-                            <h3 className="text-xl font-black text-slate-800">Actualizar Clave</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Usuario: {editingUser.username}</p>
-                        </div>
+            {
+                editingUser && createPortal(
+                    <div className="modal-overlay animate-fade-in" onClick={() => setEditingUser(null)}>
+                        <div className="modal-card-reborn animate-slide-up" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+                            <button className="close-modal-btn" onClick={() => setEditingUser(null)}>
+                                <X size={20} strokeWidth={2.5} />
+                            </button>
+                            <div className="mb-6">
+                                <h3 className="text-xl font-black text-slate-800">Actualizar Clave</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Usuario: {editingUser.username}</p>
+                            </div>
 
-                        <form onSubmit={handleEditPasswordSubmit} className="flex flex-col gap-4">
-                            <div className="input-group-jm">
-                                <label>Nueva Contraseña</label>
-                                <div className="input-with-icon-jm">
-                                    <Key size={16} />
-                                    <input type="password" required minLength="6" value={passwordData.newPassword} onChange={e => setPasswordData({ newPassword: e.target.value })} />
+                            <form onSubmit={handleEditPasswordSubmit} className="flex flex-col gap-4">
+                                <div className="input-group-jm">
+                                    <label>Nueva Contraseña</label>
+                                    <div className="input-with-icon-jm">
+                                        <Key size={16} />
+                                        <input type="password" required minLength="6" value={passwordData.newPassword} onChange={e => setPasswordData({ newPassword: e.target.value })} />
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="modal-actions-container">
-                                <button type="submit" className="btn-primary-jm px-10 h-[44px] text-sm">
-                                    <Save size={16} />
-                                    <span>Guardar</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>,
-                document.body
-            )}
+                                <div className="modal-actions-container">
+                                    <button type="submit" className="btn-primary-jm px-10 h-[44px] text-sm">
+                                        <Save size={16} />
+                                        <span>Guardar</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>,
+                    document.body
+                )
+            }
 
             <style>{`
                 .content-card { background: #fff; padding: 40px; border-radius: 32px; }
@@ -417,7 +424,7 @@ const UserManagement = () => {
                 /* Cajas Modales Corregidas CSS Puro */
                 .modal-card-reborn { background: #fff; width: 100%; max-width: 440px; padding: 32px; border-radius: 24px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 1px solid #f2f2f2; }
             `}</style>
-        </div>
+        </div >
     );
 };
 
