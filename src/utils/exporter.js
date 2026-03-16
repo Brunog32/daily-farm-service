@@ -179,7 +179,9 @@ export const exportServiceToExcel = async (serviceData, allChecklists = null, re
 
     // 1. Usar Web Share API nativa si está disponible (Salva la PWA en iOS/Android de trabarse)
     // El a.click() en celulares rompe el event loop de React y Firebase se desconecta!
-    if (navigator.share && navigator.canShare) {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile && navigator.share && navigator.canShare) {
         try {
             const file = new File([blob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             if (navigator.canShare({ files: [file] })) {
@@ -192,7 +194,7 @@ export const exportServiceToExcel = async (serviceData, allChecklists = null, re
             }
         } catch (err) {
             console.log('Error o cancelación en el Share nativo:', err);
-            return; // Si el usuario cancela, no forzamos descarga de fallback
+            // En caso de error en mobile, igual intentamos el fallback por si acaso
         }
     }
 

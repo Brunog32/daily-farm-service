@@ -51,7 +51,7 @@ const Services = () => {
     const handleDownload = async (service) => {
         try {
             if (!service) return;
-            const userData = usersMap[service.operator?.toLowerCase()];
+            const userData = usersMap[service.operator?.toLowerCase() || ''];
             const resolvedName = userData ? userData.fullName : service.operator;
             await exportServiceToExcel(service, checklists, resolvedName);
         } catch (err) {
