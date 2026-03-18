@@ -44,6 +44,7 @@ export const seedMasterChecklists = async () => {
 
         const flatSections = [
             ...CHECKLIST_SECTIONS.PRE_SERVICE.map(s => ({ ...s, group: 'PRE_SERVICE' })),
+            ...CHECKLIST_SECTIONS.URGENCIAS.map(s => ({ ...s, group: 'URGENCIAS' })),
             ...CHECKLIST_SECTIONS.FIELD_SERVICE.map(s => ({ ...s, group: 'FIELD_SERVICE' }))
         ];
 

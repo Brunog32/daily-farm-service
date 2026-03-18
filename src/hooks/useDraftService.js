@@ -5,22 +5,24 @@ import { db } from '../services/firebase';
 const debounceTimers = {};
 const pendingUpdates = {}; // Guarda estado intermedio antes de subir
 
-export const useDraftService = () => {
+export const useDraftService = (type = 'service') => {
     const [drafts, setDrafts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const collectionName = type === 'urgencia' ? 'urgenciasTemp' : 'servicesTemp';
 
     useEffect(() => {
-        const q = query(collection(db, 'servicesTemp'), orderBy('createdAt', 'desc'));
+        const q = query(collection(db, collectionName), orderBy('createdAt', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const loadedDrafts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setDrafts(loadedDrafts);
             setLoading(false);
         });
         return () => unsubscribe();
-    }, []);
+    }, [collectionName]);
 
     const createServiceDraft = async (tamboId, tamboName, operatorName) => {
-        const id = `srv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const prefix = type === 'urgencia' ? 'urg' : 'srv';
+        const id = `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const newService = {
             id,
             tamboId,
@@ -32,9 +34,10 @@ export const useDraftService = () => {
             preService: { status: 'PENDING', data: { sections: {} } },
             materials: { status: 'PENDING', data: { sections: {} } },
             execution: { status: 'PENDING', data: { sections: {} } },
+            urgencia: { status: 'PENDING', data: { sections: {} } },
         };
         // No hacer await para evitar que se congele estando offline.
-        setDoc(doc(db, 'servicesTemp', id), newService).catch(err => {
+        setDoc(doc(db, collectionName, id), newService).catch(err => {
             console.error("Error creating draft offline:", err);
         });
         return id;
@@ -45,7 +48,7 @@ export const useDraftService = () => {
     };
 
     const updateServiceDraft = async (id, updates) => {
-        const docRef = doc(db, 'servicesTemp', id);
+        const docRef = doc(db, collectionName, id);
         updateDoc(docRef, {
             ...updates,
             updatedAt: new Date().toISOString()
@@ -84,7 +87,7 @@ export const useDraftService = () => {
 
         debounceTimers[id] = setTimeout(() => {
             try {
-                const docRef = doc(db, 'servicesTemp', id);
+                const docRef = doc(db, collectionName, id);
                 const updates = { ...pendingUpdates[id] };
                 delete pendingUpdates[id];
                 // No await to avoid blocking offline queues and properly continue
@@ -105,7 +108,7 @@ export const useDraftService = () => {
         if (pendingUpdates[id]) {
             delete pendingUpdates[id];
         }
-        deleteDoc(doc(db, 'servicesTemp', id)).catch(err => {
+        deleteDoc(doc(db, collectionName, id)).catch(err => {
             console.error("Error deleting draft:", err);
         });
     };

@@ -9,7 +9,8 @@ const Checklists = () => {
     const getGroupLabel = (key) => {
         const labels = {
             PRE_SERVICE: 'Preparación Preliminar',
-            FIELD_SERVICE: 'Ejecución en Campo'
+            FIELD_SERVICE: 'Ejecución en Campo',
+            URGENCIAS: 'Urgencias y Correctivos'
         };
         return labels[key] || key;
     };
@@ -34,7 +35,7 @@ const Checklists = () => {
 
 
             <div className="sections-container">
-                {['PRE_SERVICE', 'FIELD_SERVICE'].map(groupKey => {
+                {['PRE_SERVICE', 'URGENCIAS', 'FIELD_SERVICE'].map(groupKey => {
                     const sections = groupedSections[groupKey] || [];
                     if (sections.length === 0) return null;
                     return (

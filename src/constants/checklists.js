@@ -1,8 +1,8 @@
 export const CHECKLIST_SECTIONS = {
     PRE_SERVICE: [
         {
-            id: "check_en_service",
-            title: "Check List En Service",
+            id: "check_list",
+            title: "Check List",
             items: [
                 "UNIDAD DE ORDEÑE:",
                 "Pezoneras correspondientes + 2 paquetes repuesto",
@@ -50,7 +50,9 @@ export const CHECKLIST_SECTIONS = {
                 "Llave 13 y 14",
                 "Atornillador dewalt",
             ]
-        },
+        }
+    ],
+    URGENCIAS: [
         {
             id: "comederos",
             title: "Comederos",

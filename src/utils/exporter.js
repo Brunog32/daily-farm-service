@@ -30,7 +30,8 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
     } else {
         sectionsToExport = [
             ...CHECKLIST_SECTIONS.PRE_SERVICE.map(s => ({ ...s, group: 'PRE_SERVICE' })),
-            ...CHECKLIST_SECTIONS.FIELD_SERVICE.map(s => ({ ...s, group: 'FIELD_SERVICE' }))
+            ...CHECKLIST_SECTIONS.FIELD_SERVICE.map(s => ({ ...s, group: 'FIELD_SERVICE' })),
+            ...CHECKLIST_SECTIONS.URGENCIAS.map(s => ({ ...s, group: 'URGENCIAS' }))
         ];
     }
 
@@ -63,11 +64,15 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
     const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF111111' } };
     const headerFont = { color: { argb: 'FFFFFFFF' }, bold: true };
 
-    // --- GENERAR TODAS LAS HOJAS (COMPLETADAS O NO) ---
+    // --- GENERAR TODAS LAS HOJAS (SOLO SI TIENEN DATOS) ---
     for (const sectionInfo of sectionsToExport) {
         const sectionId = sectionInfo.id;
         const sectionTitle = sectionInfo.title;
         const responses = (serviceData.sections && serviceData.sections[sectionId]) || {};
+
+        // Solo generar hoja si hay respuestas
+        const hasResponses = Object.values(responses).some(val => val !== undefined && val !== null && val !== '');
+        if (!hasResponses) continue;
 
         // Nombre de hoja (Excel manual: max 31 chars, no chars especiales)
         const safeSheetName = sectionTitle.replace(/[:\\/?*[\]]/g, '').substring(0, 31).toUpperCase();

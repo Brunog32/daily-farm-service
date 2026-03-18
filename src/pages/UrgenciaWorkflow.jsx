@@ -10,19 +10,18 @@ import MaterialsChecklist from '../components/MaterialsChecklist';
 import { exportServiceToExcel } from '../utils/exporter';
 
 const STAGE_KEYS = {
-    'PRE_SERVICE': 'preService',
-    'FIELD_SERVICE': 'execution'
+    'URGENCIAS': 'urgencia'
 };
 
-const ServiceWorkflow = () => {
+const UrgenciaWorkflow = () => {
     const { serviceId } = useParams();
     const navigate = useNavigate();
-    const { getDraftById, updateStageData, deleteDraft, loading: draftsLoading } = useDraftService('service');
-    const { addService } = useServices('service');
+    const { getDraftById, updateStageData, deleteDraft, loading: draftsLoading } = useDraftService('urgencia');
+    const { addService } = useServices('urgencia');
     const { checklists, loading: loadingChecklists } = useChecklists();
 
     const [draft, setDraft] = useState(null);
-    const [activeGroup, setActiveGroup] = useState('PRE_SERVICE');
+    const [activeGroup, setActiveGroup] = useState('URGENCIAS');
     const [activeChecklistId, setActiveChecklistId] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'error' });
@@ -38,8 +37,8 @@ const ServiceWorkflow = () => {
         if (loadedDraft) {
             setDraft(loadedDraft);
         } else {
-            showToast('No se encontró el borrador del service.', 'error');
-            navigate('/services-hub');
+            showToast('No se encontró el borrador de la urgencia.', 'error');
+            navigate('/urgencias-hub');
         }
     }, [serviceId, draftsLoading]);
 
@@ -59,9 +58,9 @@ const ServiceWorkflow = () => {
 
         updateStageData(serviceId, stageKey, {
             sections: {
-                ...(draft[stageKey].data.sections || {}),
+                ...(draft[stageKey]?.data?.sections || {}),
                 [sectionId]: {
-                    ...((draft[stageKey].data.sections && draft[stageKey].data.sections[sectionId]) || {}),
+                    ...((draft[stageKey]?.data?.sections && draft[stageKey]?.data?.sections[sectionId]) || {}),
                     ...updates
                 }
             }
@@ -73,11 +72,11 @@ const ServiceWorkflow = () => {
                 ...prev[stageKey],
                 status: 'IN_PROGRESS',
                 data: {
-                    ...prev[stageKey].data,
+                    ...prev[stageKey]?.data,
                     sections: {
-                        ...(prev[stageKey].data.sections || {}),
+                        ...(prev[stageKey]?.data?.sections || {}),
                         [sectionId]: {
-                            ...((prev[stageKey].data.sections && prev[stageKey].data.sections[sectionId]) || {}),
+                            ...((prev[stageKey]?.data?.sections && prev[stageKey]?.data?.sections[sectionId]) || {}),
                             ...updates
                         }
                     }
@@ -90,15 +89,13 @@ const ServiceWorkflow = () => {
         handleBulkStatusChange(sectionId, { [itemIndex]: status });
     };
 
-
     const handleFinish = async () => {
         setIsSaving(true);
 
         try {
-            // Unify the responses
+            // Unify the responses (for Urgencia only the urgencia stage)
             const allSections = {
-                ...(draft.preService?.data?.sections || {}),
-                ...(draft.execution?.data?.sections || {})
+                ...(draft.urgencia?.data?.sections || {})
             };
 
             const serviceRecord = {
@@ -109,7 +106,8 @@ const ServiceWorkflow = () => {
                 startTime: new Date(draft.createdAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
                 endTime: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
                 sections: allSections,
-                status: 'completado'
+                status: 'completado',
+                type: 'urgencia'
             };
 
             const userStorage = localStorage.getItem('df_user');
@@ -118,34 +116,26 @@ const ServiceWorkflow = () => {
                 ? `${currentUser.name} ${currentUser.lastName}`
                 : draft.operator;
 
-            // 1. Guardar en BD (online o en IndexedDB para luego sincronizar)
             const savePromise = addService(serviceRecord);
             if (navigator.onLine) {
                 try {
-                    // Esperar máximo 5 segundos al servidor, si no responde, asumir guardado local y avanzar
                     await Promise.race([
                         savePromise,
                         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
                     ]);
                 } catch (err) {
-                    console.warn('Conexión lenta o error de red, guardado localmente (sincronizará después):', err);
+                    console.warn('Conexión lenta o error de red, guardado localmente:', err);
                 }
             } else {
-                // Offline: no esperamos a que termine el promise (Firebase la resolverá al reconectar)
-                // Simulamos un pequeño delay visual para el usuario
                 await new Promise(resolve => setTimeout(resolve, 600));
             }
 
-            // 2. Borrar de borrador local. Se espera para confirmar.
             await deleteDraft(draft.id);
 
-            showToast(navigator.onLine ? 'Service guardado con éxito. Generando reporte...' : 'Service guardado en modo offline. Generando reporte...', 'success');
+            showToast(navigator.onLine ? 'Urgencia guardada con éxito. Generando reporte...' : 'Urgencia guardada en modo offline. Generando reporte...', 'success');
 
-            // 3. Navegar inmediatamente antes de que el celular intercepte las descargas
             navigate('/services');
 
-            // 4. Dejar el proceso de exportar para el final, de forma asíncrona y separada, 
-            // ya que algunos celulares bloquean el sistema al descargar
             setTimeout(() => {
                 exportServiceToExcel(serviceRecord, checklists, resolvedName).catch(err => {
                     console.log("Exportar archivo en background cancelado o con error:", err);
@@ -168,7 +158,6 @@ const ServiceWorkflow = () => {
         if (t.includes('plomeria') || t.includes('agua')) return <Droplets size={16} />;
         if (t.includes('electrico')) return <Zap size={16} />;
         if (t.includes('materiales')) return <Box size={16} />;
-        if (t.includes('preparacion') || group === 'PRE_SERVICE') return <ShieldAlert size={16} />;
         return <ClipboardCheck size={16} />;
     };
 
@@ -222,34 +211,30 @@ const ServiceWorkflow = () => {
     return (
         <div className="service-execution-refined animate-fade-in max-w-[1000px] mx-auto pb-20">
 
-            {/* HEADER COMPACTO CON BOTONES A LA DERECHA */}
             <div className="execution-top-bar">
                 <div className="top-info">
                     <div className="execution-badge">
-                        <Activity size={12} color="#5558fa" />
-                        <span>Ejecutando en Nube (Offline Soportado)</span>
+                        <AlertTriangle size={12} color="#5558fa" />
+                        <span>Ejecutando Urgencia (Offline Soportado)</span>
                     </div>
                     <h2>{draft.tamboName}</h2>
                 </div>
 
                 <div className="execution-actions">
-                    <button className="btn-secondary-jm btn-sm" onClick={() => navigate('/services-hub')}>
+                    <button className="btn-secondary-jm btn-sm" onClick={() => navigate('/urgencias-hub')}>
                         Guardar y Salir
                     </button>
                     <button className="btn-primary-jm btn-sm" onClick={handleFinish} disabled={isSaving}>
                         <CheckCircle2 size={14} />
-                        <span>{isSaving ? 'Guardando...' : 'Finalizar Service'}</span>
+                        <span>{isSaving ? 'Guardando...' : 'Finalizar Urgencia'}</span>
                     </button>
                 </div>
             </div>
 
-            {/* TABS PRINCIPALES */}
             <div className="main-tabs-container">
                 {[
-                    { id: 'PRE_SERVICE', label: '1. Pre-Service', icon: <ShieldAlert size={16} /> },
-                    { id: 'FIELD_SERVICE', label: '2. Ejecución', icon: <Layers size={16} /> }
+                    { id: 'URGENCIAS', label: '1. Checklist', icon: <ClipboardCheck size={16} /> }
                 ].map(tab => (
-
                     <button
                         key={tab.id}
                         className={`group-tab-btn ${activeGroup === tab.id ? 'active' : ''}`}
@@ -263,7 +248,6 @@ const ServiceWorkflow = () => {
 
             <div className="execution-layout">
 
-                {/* LISTA DE CHECKLISTS LATERAL (SUB-TABS) */}
                 <div className="sidebar-checklists">
                     <h3>Checklists Activos</h3>
                     {groupChecklists.map(section => {
@@ -301,7 +285,6 @@ const ServiceWorkflow = () => {
                     )}
                 </div>
 
-                {/* CONTENIDO DEL CHECKLIST ACTIVO */}
                 <div className="active-checklist-content">
                     {activeSection ? (
                         <div key={activeSection.id} className="checklist-render-card animate-fade-in">
@@ -312,25 +295,22 @@ const ServiceWorkflow = () => {
                                     </div>
                                     <div>
                                         <h3>{activeSection.title}</h3>
-                                        {activeSection.title !== 'Materiales en Service' && (
-                                            <p>
-                                                {activeSection.items.reduce((acc, item, idx) => {
-                                                    const isMaterialStyle = activeSection.group === 'MATERIALS' || activeSection.id === 'materiales' || activeSection.title?.includes('Materiales');
-                                                    const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
+                                        <p>
+                                            {activeSection.items.reduce((acc, item, idx) => {
+                                                const isMaterialStyle = activeSection.group === 'MATERIALS' || activeSection.id === 'materiales' || activeSection.title?.includes('Materiales');
+                                                const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
 
-                                                    if (!isSubsection) return acc + 1;
-                                                    const next = activeSection.items[idx + 1];
-                                                    const isNextSubsection = !next || (typeof next === 'string' && (isMaterialStyle || next.trim().endsWith(':')));
-                                                    if (isNextSubsection) return acc + 1;
-                                                    return acc;
-                                                }, 0)} puntos de verificación
-                                            </p>
-                                        )}
+                                                if (!isSubsection) return acc + 1;
+                                                const next = activeSection.items[idx + 1];
+                                                const isNextSubsection = !next || (typeof next === 'string' && (isMaterialStyle || next.trim().endsWith(':')));
+                                                if (isNextSubsection) return acc + 1;
+                                                return acc;
+                                            }, 0)} puntos de verificación
+                                        </p>
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px', flexWrap: 'nowrap' }}>
-                                    {/* GLOBAL SELECT ALL */}
-                                    {activeSection.title !== 'Materiales en Service' && (() => {
+                                    {(() => {
                                         const isMaterialStyle = activeSection.group === 'MATERIALS' || activeSection.id === 'materiales' || activeSection.title?.includes('Materiales');
                                         const responses = draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {};
 
@@ -389,27 +369,18 @@ const ServiceWorkflow = () => {
                             </div>
 
                             <div className="minimal-checklists-wrapper">
-                                {activeSection.title === 'Materiales en Service' ? (
-                                    <MaterialsChecklist
-                                        title={activeSection.title}
-                                        items={activeSection.items}
-                                        values={draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {}}
-                                        onChange={(idx, val) => handleStatusChange(activeSection.id, idx, val)}
-                                    />
-                                ) : (
-                                    <Checklist
-                                        title={activeSection.title}
-                                        items={activeSection.items}
-                                        values={draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {}}
-                                        onChange={(idxOrObj, val) => {
-                                            if (typeof idxOrObj === 'object') {
-                                                handleBulkStatusChange(activeSection.id, idxOrObj);
-                                            } else {
-                                                handleStatusChange(activeSection.id, idxOrObj, val);
-                                            }
-                                        }}
-                                    />
-                                )}
+                                <Checklist
+                                    title={activeSection.title}
+                                    items={activeSection.items}
+                                    values={draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {}}
+                                    onChange={(idxOrObj, val) => {
+                                        if (typeof idxOrObj === 'object') {
+                                            handleBulkStatusChange(activeSection.id, idxOrObj);
+                                        } else {
+                                            handleStatusChange(activeSection.id, idxOrObj, val);
+                                        }
+                                    }}
+                                />
                             </div>
                         </div>
                     ) : (
@@ -420,8 +391,6 @@ const ServiceWorkflow = () => {
                 </div>
             </div>
 
-
-            {/* TOAST SYSTEM */}
             {toast.show && createPortal(
                 <div className={`toast-portal-v9 ${toast.type}`}>
                     <div className="toast-content-v9">
@@ -439,7 +408,6 @@ const ServiceWorkflow = () => {
             <style>{`
                 .service-execution-refined { max-width: 1000px; margin: 0 auto; padding-bottom: 80px; }
                 
-                /* Top Bar */
                 .execution-top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1.5px solid #f2f2f2; padding-bottom: 16px; margin-bottom: 24px; }
                 .top-info h2 { font-size: 1.25rem; font-weight: 900; color: #111; margin: 0; }
                 .execution-badge { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
@@ -447,16 +415,13 @@ const ServiceWorkflow = () => {
                 .execution-actions { display: flex; align-items: center; gap: 12px; }
                 .btn-sm { padding: 8px 16px !important; height: 36px !important; font-size: 11px !important; border-radius: 8px !important; }
 
-                /* Main Tabs */
                 .main-tabs-container { display: flex; gap: 8px; background: #f8f9fa; padding: 6px; border-radius: 16px; margin-bottom: 24px; width: fit-content; }
                 .group-tab-btn { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 12px; font-size: 14px; font-weight: 800; border: none; outline: none; background: transparent; color: #64748b; cursor: pointer; transition: all 0.2s; }
                 .group-tab-btn:hover { color: #111; }
                 .group-tab-btn.active { background: #fff; color: #5558fa; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
 
-                /* Layout */
                 .execution-layout { display: flex; gap: 24px; align-items: flex-start; }
                 
-                /* Sidebar */
                 .sidebar-checklists { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
                 .sidebar-checklists h3 { font-size: 10px; font-weight: 900; text-transform: uppercase; color: #94a3b8; letter-spacing: 2px; margin: 0 0 8px 8px; }
                 .sub-tab-btn { display: flex; flex-direction: column; text-align: left; padding: 14px; border-radius: 16px; border: 1.5px solid transparent; background: transparent; outline: none; cursor: pointer; transition: all 0.2s; }
@@ -480,7 +445,6 @@ const ServiceWorkflow = () => {
                 .empty-sidebar { padding: 16px; text-align: center; border: 1.5px dashed #e2e8f0; border-radius: 16px; }
                 .empty-sidebar span { font-size: 11px; font-weight: 600; color: #94a3b8; }
 
-                /* Content Area */
                 .active-checklist-content { flex: 1; min-width: 0; }
                 .checklist-render-card { background: #fff; border: 1.5px solid #f6f6f6; border-radius: 24px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
                 .checklist-render-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #f8f9fa; padding-bottom: 16px; margin-bottom: 24px; }
@@ -489,111 +453,12 @@ const ServiceWorkflow = () => {
                 
                 .empty-checklist-state { height: 160px; border: 1.5px dashed #e2e8f0; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #94a3b8; background: #f8f9fa; }
 
-                /* Overrides */
-                .minimal-checklists-wrapper .checklist-container, .minimal-checklists-wrapper .materials-container { padding: 0; background: transparent; border: none; box-shadow: none; }
-                .minimal-checklists-wrapper .checklist-row, .minimal-checklists-wrapper .material-row-refined { padding: 10px 16px; margin-bottom: 8px; border-radius: 12px; border: 1.5px solid #f6f6f6; }
+                .minimal-checklists-wrapper .checklist-container { padding: 0; background: transparent; border: none; box-shadow: none; }
+                .minimal-checklists-wrapper .checklist-row { padding: 10px 16px; margin-bottom: 8px; border-radius: 12px; border: 1.5px solid #f6f6f6; }
                 .minimal-checklists-wrapper .item-subtitle-tag { display: none !important; }
 
-                /* Modal Styles */
-                
-
-                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-
-                @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-                .animate-slide-up { animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-                @keyframes fadeScaleIn {
-                    from { opacity: 0; transform: scale(0.98) translateY(4px); }
-                    to { opacity: 1; transform: scale(1) translateY(0); }
-                }
-                .animate-fade-in { animation: fadeScaleIn 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
-                
-                @media (max-width: 1024px) {
-                    .service-execution-refined { padding: 0 4px; }
-                    .execution-top-bar { flex-direction: column; align-items: stretch; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; text-align: center; }
-                    .execution-badge { justify-content: center; }
-                    .top-info h2 { font-size: 1.4rem; }
-                    .execution-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-                    .btn-sm { height: 44px !important; width: 100%; border-radius: 12px !important; font-size: 12px !important; }
-                    
-                    .main-tabs-container { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
-                    .group-tab-btn { padding: 12px 10px; font-size: 12px; justify-content: center; }
-                    
-                    .execution-layout { flex-direction: column; }
-                    .sidebar-checklists { 
-                        width: 100%; 
-                        flex-direction: row; 
-                        overflow-x: auto; 
-                        padding: 4px 0 16px 0; 
-                        margin-bottom: 8px;
-                        gap: 12px;
-                        -webkit-overflow-scrolling: touch;
-                        scrollbar-width: none;
-                    }
-                    .sidebar-checklists::-webkit-scrollbar { display: none; }
-                    .sidebar-checklists h3 { display: none; }
-                    
-                    .sub-tab-btn { 
-                        min-width: 150px; 
-                        max-width: 200px;
-                        padding: 10px 12px; 
-                        background: #f8f9fa;
-                        border: 1.5px solid #f1f5f9;
-                        height: 100%;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: space-between;
-                    }
-                    .sub-tab-btn.active { border-color: #5558fa33; }
-                    .sub-tab-title { align-items: center; gap: 6px; margin-bottom: 8px; }
-                    .sub-tab-title span { 
-                        font-size: 12px; 
-                        font-weight: 900;
-                        max-width: none; 
-                        white-space: normal; 
-                        overflow: visible; 
-                        text-overflow: clip;
-                        line-height: 1.2;
-                        text-align: left;
-                    }
-                    .sub-tab-title .icon-wrapper { width: 25px; }
-                    .sub-tab-title .icon-wrapper svg { width: 14px; height: 14px; }
-                    .sub-tab-progress { margin-top: auto; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.03); }
-                    .sub-tab-progress span { font-size: 9px; font-weight: 900; }
-                    .progress-bar-bg { width: 44px; }
-                    
-                    .active-checklist-content { width: 100%; margin-top: 8px; }
-                    .checklist-render-card { padding: 16px; border-radius: 20px; }
-                    .checklist-render-header h3 { font-size: 1.1rem; }
-                    
-                    .modal-card-reborn { padding: 32px 24px; border-radius: 28px; width: 95%; }
-                    .modal-title-v9 { font-size: 20px; }
-                    .btn-entendido-v9 { width: 100%; padding: 14px 0; }
-                }
-
-                /* TOAST REFINED STYLES */
-                .toast-portal-v9 {
-                    position: fixed;
-                    bottom: 40px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    z-index: 99999;
-                    animation: slideUpFadeToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-                }
-                .toast-content-v9 {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 12px 24px;
-                    border-radius: 50px;
-                    color: white;
-                    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4);
-                    border: 1px solid rgba(255,255,255,0.1);
-                    min-width: 280px;
-                    justify-content: center;
-                }
+                .toast-portal-v9 { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 99999; animation: slideUpFadeToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+                .toast-content-v9 { display: flex; align-items: center; gap: 12px; padding: 12px 24px; border-radius: 50px; color: white; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); min-width: 280px; justify-content: center; }
                 .toast-portal-v9.success .toast-content-v9 { background: #10b981; }
                 .toast-portal-v9.error .toast-content-v9 { background: #1e293b; }
                 .toast-icon-v9 { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
@@ -605,9 +470,15 @@ const ServiceWorkflow = () => {
                     0% { opacity: 0; transform: translate(-50%, 24px) scale(0.9); }
                     100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
                 }
+
+                @keyframes fadeScaleIn {
+                    from { opacity: 0; transform: scale(0.98) translateY(4px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
+                }
+                .animate-fade-in { animation: fadeScaleIn 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
             `}</style>
         </div>
     );
 };
 
-export default ServiceWorkflow;
+export default UrgenciaWorkflow;

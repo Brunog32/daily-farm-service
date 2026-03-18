@@ -8,7 +8,9 @@ import ChecklistEditor from './pages/ChecklistEditor';
 import Login from './pages/Login';
 import UserManagement from './pages/UserManagement';
 import ServicesHub from './pages/ServicesHub';
+import UrgenciasHub from './pages/UrgenciasHub';
 import ServiceWorkflow from './pages/ServiceWorkflow';
+import UrgenciaWorkflow from './pages/UrgenciaWorkflow';
 
 const ProtectedRoute = ({ children }) => {
   const user = localStorage.getItem('df_user');
@@ -57,6 +59,8 @@ function App() {
           <Route path="services" element={<Services />} />
           <Route path="services-hub" element={<ServicesHub />} />
           <Route path="service-flow/:serviceId" element={<ServiceWorkflow />} />
+          <Route path="urgencias-hub" element={<UrgenciasHub />} />
+          <Route path="urgencia-flow/:serviceId" element={<UrgenciaWorkflow />} />
 
           <Route path="settings" element={
             <AdminRoute>

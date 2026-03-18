@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Play, Clock, ChevronRight, Factory } from 'lucide-react';
+import { Play, Clock, ChevronRight, Factory, AlertTriangle } from 'lucide-react';
 import { useDraftService } from '../hooks/useDraftService';
 import { useTambos } from '../hooks/useTambos';
 
-const ServicesHub = () => {
+const UrgenciasHub = () => {
     const navigate = useNavigate();
-    const { drafts, loading, createServiceDraft, deleteDraft } = useDraftService('service');
+    const { drafts, loading, createServiceDraft, deleteDraft } = useDraftService('urgencia');
     const { tambos } = useTambos();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTambo, setSelectedTambo] = useState('');
@@ -35,23 +35,23 @@ const ServicesHub = () => {
 
         const newId = await createServiceDraft(tamboObj.id, tamboObj.name, operator);
         setIsCreating(false);
-        navigate(`/service-flow/${newId}`);
+        navigate(`/urgencia-flow/${newId}`);
     };
 
     return (
         <div className="services-hub-container animate-fade-in pb-20">
             <div className="hub-header">
-                <h2>Centro de Operaciones</h2>
-                <p>Inicia nuevos services o retoma los que están en curso.</p>
+                <h2>Urgencias</h2>
+                <p>Inicia nuevas urgencias o retoma las que están en curso.</p>
             </div>
 
             <div className="hub-actions-card">
                 <div>
-                    <h3>Nuevo Service</h3>
-                    <p>Comienza un nuevo reporte técnico para un establecimiento.</p>
+                    <h3>Nueva Urgencia</h3>
+                    <p>Reporta una urgencia técnica para un establecimiento.</p>
                 </div>
                 <button className="btn-primary-jm" onClick={() => setIsModalOpen(true)}>
-                    <Play size={16} fill="currentColor" />
+                    <AlertTriangle size={16} />
                     <span>Iniciar Ahora</span>
                 </button>
             </div>
@@ -59,7 +59,7 @@ const ServicesHub = () => {
             <div className="hub-drafts-section">
                 <h3 className="section-title">
                     <Clock size={20} className="icon-clock" />
-                    Services en Curso
+                    Urgencias en Curso
                 </h3>
 
                 {loading ? (
@@ -70,12 +70,12 @@ const ServicesHub = () => {
                 ) : drafts.length === 0 ? (
                     <div className="empty-drafts">
                         <Clock size={48} className="icon-empty" />
-                        <p>No hay services pendientes</p>
+                        <p>No hay urgencias pendientes</p>
                     </div>
                 ) : (
                     <div className="drafts-grid">
                         {drafts.map(draft => (
-                            <div key={draft.id} className="draft-card" onClick={() => navigate(`/service-flow/${draft.id}`)}>
+                            <div key={draft.id} className="draft-card" onClick={() => navigate(`/urgencia-flow/${draft.id}`)}>
                                 <div>
                                     <div className="draft-card-header">
                                         <div className="draft-badge">Borrador Nube</div>
@@ -139,6 +139,7 @@ const ServicesHub = () => {
                 .hub-actions-card:hover { border-color: #5558fa33; box-shadow: 0 8px 32px rgba(85,88,250,0.06); transform: translateY(-2px); }
                 .hub-actions-card h3 { font-size: 1.25rem; font-weight: 900; color: #1e293b; margin: 0 0 6px 0; }
                 .hub-actions-card p { font-size: 0.95rem; font-weight: 600; color: #64748b; margin: 0; }
+                
                 .btn-primary-jm { display: flex; align-items: center; justify-content: center; gap: 8px; }
                 
                 .hub-drafts-section { margin-bottom: 40px; }
@@ -220,4 +221,4 @@ const ServicesHub = () => {
     );
 };
 
-export default ServicesHub;
+export default UrgenciasHub;

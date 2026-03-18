@@ -7,7 +7,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
 const Services = () => {
-    const { services, loading } = useServices();
+    const [serviceType, setServiceType] = useState('service');
+    const { services, loading } = useServices(serviceType);
     const { checklists } = useChecklists();
     const [searchTerm, setSearchTerm] = useState('');
     const [startDate, setStartDate] = useState('');
@@ -138,7 +139,24 @@ const Services = () => {
     );
 
     return (
-        <div className="services-history animate-fade-in relative pb-20">
+        <div className="services-history animate-fade-in relative pb-20 mt-[-20px]">
+            
+            <div className="flex justify-between items-center mb-10">
+                <div className="execution-tabs-bar">
+                    <button
+                        className={`exec-tab ${serviceType === 'service' ? 'active' : ''}`}
+                        onClick={() => setServiceType('service')}
+                    >
+                        Services
+                    </button>
+                    <button
+                        className={`exec-tab ${serviceType === 'urgencia' ? 'active' : ''}`}
+                        onClick={() => setServiceType('urgencia')}
+                    >
+                        Urgencias
+                    </button>
+                </div>
+            </div>
 
             {/* OVERLAY DE CARGA GLOBAL */}
             {isUploading && (
@@ -340,6 +358,12 @@ const Services = () => {
 
 
             <style>{`
+                /* TABS */
+                .execution-tabs-bar { display: inline-flex; background: #fdfdfd; padding: 6px; border-radius: 16px; border: 1.5px solid #f2f2f2; }
+                .exec-tab { padding: 12px 32px; font-weight: 800; font-size: 13px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; border: none; background: transparent; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+                .exec-tab:hover { color: #111; }
+                .exec-tab.active { background: #111; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
                 /* Filtros y Top Bar */
                 .filters-bar-service { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 32px; }
                 .filters-secondary-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }

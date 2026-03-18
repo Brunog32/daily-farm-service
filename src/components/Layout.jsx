@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ClipboardList, Factory, History, Settings, LogOut, Search, Bell, User, ChevronLeft, Play, Wifi, WifiOff } from 'lucide-react';
+import { ClipboardList, Factory, History, Settings, LogOut, Search, Bell, User, ChevronLeft, Play, Wifi, WifiOff, AlertTriangle } from 'lucide-react';
 import { Cow } from './Icons';
 import { useEffect, useState } from 'react';
 
@@ -60,13 +60,14 @@ const Layout = () => {
     if (path.startsWith('/tambos')) return 'Gestión de Tambos';
     if (path.startsWith('/checklists')) return 'Plantillas';
     if (path.startsWith('/services-hub')) return 'Services';
-    if (path.startsWith('/services')) return 'Historial de Services';
+    if (path.startsWith('/urgencias-hub') || path.startsWith('/urgencia-flow')) return 'Urgencias';
+    if (path.startsWith('/services')) return 'Historial';
     if (path.startsWith('/settings')) return 'Administración';
     return 'Panel de Control';
   };
 
   const isMainHubPage = () => {
-    const mainPaths = ['/tambos', '/checklists', '/services-hub', '/services', '/settings'];
+    const mainPaths = ['/tambos', '/checklists', '/services-hub', '/urgencias-hub', '/services', '/settings'];
     return mainPaths.includes(location.pathname);
   };
 
@@ -88,6 +89,7 @@ const Layout = () => {
           <NavItem to="/tambos" icon={Factory} label="Establecimientos" />
           <NavItem to="/checklists" icon={ClipboardList} label="Plantillas" />
           <NavItem to="/services-hub" icon={Play} label="Services" />
+          <NavItem to="/urgencias-hub" icon={AlertTriangle} label="Urgencias" />
           <NavItem to="/services" icon={History} label="Historial" />
           <div className="divider" />
           {currentUser && currentUser.role === 'admin' && (
@@ -161,6 +163,10 @@ const Layout = () => {
             <div className={`center-icon-wrapper ${isActive('/services-hub') ? 'active' : ''}`}>
               <Play size={24} fill={isActive('/services-hub') ? 'white' : 'none'} />
             </div>
+          </Link>
+          <Link to="/urgencias-hub" className={`mobile-nav-item ${isActive('/urgencias-hub') ? 'active' : ''}`}>
+            <AlertTriangle size={22} />
+            <span>Urgencias</span>
           </Link>
           <Link to="/services" className={`mobile-nav-item ${isActive('/services') ? 'active' : ''}`}>
             <History size={22} />
