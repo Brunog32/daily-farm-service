@@ -1,17 +1,29 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Play, Clock, ChevronRight, Factory } from 'lucide-react';
+import { Play, Clock, ChevronRight, Factory, AlertTriangle } from 'lucide-react';
 import { useDraftService } from '../hooks/useDraftService';
 import { useTambos } from '../hooks/useTambos';
 
 const ServicesHub = () => {
     const navigate = useNavigate();
-    const { drafts, loading, createServiceDraft, deleteDraft } = useDraftService('service');
+    const [activeTab, setActiveTab] = useState('service');
+    
+    // Hooks para ambos tipos
+    const { drafts: serviceDrafts, loading: sLoading, createServiceDraft: createS, deleteDraft: deleteS } = useDraftService('service');
+    const { drafts: urgenciaDrafts, loading: uLoading, createServiceDraft: createU, deleteDraft: deleteU } = useDraftService('urgencia');
+    
     const { tambos } = useTambos();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTambo, setSelectedTambo] = useState('');
     const [isCreating, setIsCreating] = useState(false);
+
+    // Seleccionamos los datos según el tab activo
+    const isUrgencia = activeTab === 'urgencia';
+    const currentDrafts = isUrgencia ? urgenciaDrafts : serviceDrafts;
+    const loading = isUrgencia ? uLoading : sLoading;
+    const createFn = isUrgencia ? createU : createS;
+    const deleteFn = isUrgencia ? deleteU : deleteS;
 
     const handleStartNew = async () => {
         if (!selectedTambo) {
@@ -33,25 +45,41 @@ const ServicesHub = () => {
             operator = user.username;
         }
 
-        const newId = await createServiceDraft(tamboObj.id, tamboObj.name, operator);
+        const newId = await createFn(tamboObj.id, tamboObj.name, operator);
         setIsCreating(false);
-        navigate(`/service-flow/${newId}`);
+        navigate(isUrgencia ? `/urgencia-flow/${newId}` : `/service-flow/${newId}`);
     };
 
     return (
-        <div className="services-hub-container animate-fade-in pb-20">
+        <div className="services-hub-container animate-fade-in pb-20 mt-[-20px]">
             <div className="hub-header">
-                <h2>Centro de Operaciones</h2>
-                <p>Inicia nuevos services o retoma los que están en curso.</p>
+                <h2 className="desktop-only">Centro de Operaciones</h2>
+                
+                <div className="execution-tabs-bar mt-8 hub-tabs-alignment">
+                    <button
+                        className={`exec-tab ${activeTab === 'service' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('service')}
+                    >
+                        Services
+                    </button>
+                    <button
+                        className={`exec-tab ${activeTab === 'urgencia' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('urgencia')}
+                    >
+                        Urgencias
+                    </button>
+                </div>
+
+                <p>Inicia {isUrgencia ? 'nuevas urgencias' : 'nuevos services'} o retoma los que están en curso.</p>
             </div>
 
             <div className="hub-actions-card">
                 <div>
-                    <h3>Nuevo Service</h3>
+                    <h3>Nuevo {isUrgencia ? 'Reporte de Urgencia' : 'Service'}</h3>
                     <p>Comienza un nuevo reporte técnico para un establecimiento.</p>
                 </div>
                 <button className="btn-primary-jm" onClick={() => setIsModalOpen(true)}>
-                    <Play size={16} fill="currentColor" />
+                    {isUrgencia ? <AlertTriangle size={16} /> : <Play size={16} fill="currentColor" />}
                     <span>Iniciar Ahora</span>
                 </button>
             </div>
@@ -59,7 +87,7 @@ const ServicesHub = () => {
             <div className="hub-drafts-section">
                 <h3 className="section-title">
                     <Clock size={20} className="icon-clock" />
-                    Services en Curso
+                    {isUrgencia ? 'Urgencias' : 'Services'} en Curso
                 </h3>
 
                 {loading ? (
@@ -67,19 +95,19 @@ const ServicesHub = () => {
                         <div className="w-8 h-8 mx-auto border-2 border-slate-100 border-t-[#5558fa] rounded-full animate-spin mb-4" />
                         <p style={{ fontSize: '14px' }}>Cargando borradores...</p>
                     </div>
-                ) : drafts.length === 0 ? (
+                ) : currentDrafts.length === 0 ? (
                     <div className="empty-drafts">
                         <Clock size={48} className="icon-empty" />
-                        <p>No hay services pendientes</p>
+                        <p>No hay {isUrgencia ? 'urgencias' : 'services'} pendientes</p>
                     </div>
                 ) : (
                     <div className="drafts-grid">
-                        {drafts.map(draft => (
-                            <div key={draft.id} className="draft-card" onClick={() => navigate(`/service-flow/${draft.id}`)}>
+                        {currentDrafts.map(draft => (
+                            <div key={draft.id} className="draft-card" onClick={() => navigate(isUrgencia ? `/urgencia-flow/${draft.id}` : `/service-flow/${draft.id}`)}>
                                 <div>
                                     <div className="draft-card-header">
                                         <div className="draft-badge">Borrador Nube</div>
-                                        <button className="delete-draft-btn" onClick={(e) => { e.stopPropagation(); deleteDraft(draft.id); }} title="Eliminar borrador">
+                                        <button className="delete-draft-btn" onClick={(e) => { e.stopPropagation(); deleteFn(draft.id); }} title="Eliminar borrador">
                                             ELIMINAR
                                         </button>
                                     </div>
@@ -130,6 +158,12 @@ const ServicesHub = () => {
 
             <style>{`
                 .services-hub-container { max-width: 1000px; margin: 0 auto; padding-bottom: 80px; }
+
+                /* TABS */
+                .execution-tabs-bar { display: inline-flex; background: #fff; padding: 5px; border-radius: 20px; border: 1.5px solid #f2f2f2; margin-bottom: 24px; }
+                .exec-tab { padding: 10px 28px; font-weight: 900; font-size: 11px; color: #bbb; text-transform: uppercase; letter-spacing: 1.5px; border: none; background: transparent; border-radius: 16px; cursor: pointer; transition: all 0.2s; }
+                .exec-tab:hover { color: #777; }
+                .exec-tab.active { background: #111; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
                 
                 .hub-header { margin-bottom: 40px; }
                 .hub-header h2 { font-size: 1.75rem; font-weight: 900; color: #1e293b; margin: 0 0 8px 0; letter-spacing: -0.02em; }
@@ -180,11 +214,18 @@ const ServicesHub = () => {
                 .btn-cancel-modal:hover { background: #f1f5f9; color: #1e293b; }
                 .hub-modal-actions .btn-primary-jm { padding: 0 40px; height: 44px; font-size: 14px; box-shadow: 0 4px 12px rgba(85,88,250,0.2) !important; }
                 
+                .desktop-only { display: block; }
                 @media (max-width: 1024px) {
-                    .services-hub-container { padding: 0 4px; }
-                    .hub-header { margin-bottom: 24px; }
+                    .desktop-only { display: none !important; }
+                }
+
+                @media (max-width: 1024px) {
+                    .services-hub-container { padding: 0; }
+                    .hub-header { margin-bottom: 24px; margin-top: 10px; }
                     .hub-header h2 { font-size: 1.5rem; }
-                    .hub-header p { font-size: 0.875rem; }
+                    .hub-header p { font-size: 0.875rem; color: #64748b; font-weight: 600; }
+                    
+                    .execution-tabs-bar { margin-top: 0 !important; margin-bottom: 16px !important; }
                     
                     .hub-actions-card { 
                         flex-direction: column; 

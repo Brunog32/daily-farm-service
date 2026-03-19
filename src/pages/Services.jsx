@@ -141,7 +141,7 @@ const Services = () => {
     return (
         <div className="services-history animate-fade-in relative pb-20 mt-[-20px]">
             
-            <div className="flex justify-between items-center mb-10">
+            <div className="flex justify-between items-center">
                 <div className="execution-tabs-bar">
                     <button
                         className={`exec-tab ${serviceType === 'service' ? 'active' : ''}`}
@@ -359,10 +359,10 @@ const Services = () => {
 
             <style>{`
                 /* TABS */
-                .execution-tabs-bar { display: inline-flex; background: #fdfdfd; padding: 6px; border-radius: 16px; border: 1.5px solid #f2f2f2; }
-                .exec-tab { padding: 12px 32px; font-weight: 800; font-size: 13px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; border: none; background: transparent; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
-                .exec-tab:hover { color: #111; }
-                .exec-tab.active { background: #111; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+                .execution-tabs-bar { display: inline-flex; background: #fff; padding: 5px; border-radius: 20px; border: 1.5px solid #f2f2f2; margin-bottom: 24px; }
+                .exec-tab { padding: 10px 28px; font-weight: 900; font-size: 11px; color: #bbb; text-transform: uppercase; letter-spacing: 1.5px; border: none; background: transparent; border-radius: 16px; cursor: pointer; transition: all 0.2s; }
+                .exec-tab:hover { color: #777; }
+                .exec-tab.active { background: #111; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
 
                 /* Filtros y Top Bar */
                 .filters-bar-service { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 32px; }

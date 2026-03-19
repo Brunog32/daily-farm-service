@@ -59,15 +59,14 @@ const Layout = () => {
     if (path.includes('/service-execution') || path.includes('/service-flow')) return 'Ejecución de Service';
     if (path.startsWith('/tambos')) return 'Gestión de Tambos';
     if (path.startsWith('/checklists')) return 'Plantillas';
-    if (path.startsWith('/services-hub')) return 'Services';
-    if (path.startsWith('/urgencias-hub') || path.startsWith('/urgencia-flow')) return 'Urgencias';
+    if (path.startsWith('/services-hub') || path.startsWith('/urgencia-flow')) return 'Services y Urgencias';
     if (path.startsWith('/services')) return 'Historial';
     if (path.startsWith('/settings')) return 'Administración';
     return 'Panel de Control';
   };
 
   const isMainHubPage = () => {
-    const mainPaths = ['/tambos', '/checklists', '/services-hub', '/urgencias-hub', '/services', '/settings'];
+    const mainPaths = ['/tambos', '/checklists', '/services-hub', '/services', '/settings'];
     return mainPaths.includes(location.pathname);
   };
 
@@ -88,8 +87,7 @@ const Layout = () => {
         <nav className="sidebar-nav">
           <NavItem to="/tambos" icon={Factory} label="Establecimientos" />
           <NavItem to="/checklists" icon={ClipboardList} label="Plantillas" />
-          <NavItem to="/services-hub" icon={Play} label="Services" />
-          <NavItem to="/urgencias-hub" icon={AlertTriangle} label="Urgencias" />
+          <NavItem to="/services-hub" icon={Play} label="Operaciones" />
           <NavItem to="/services" icon={History} label="Historial" />
           <div className="divider" />
           {currentUser && currentUser.role === 'admin' && (
@@ -163,10 +161,6 @@ const Layout = () => {
             <div className={`center-icon-wrapper ${isActive('/services-hub') ? 'active' : ''}`}>
               <Play size={24} fill={isActive('/services-hub') ? 'white' : 'none'} />
             </div>
-          </Link>
-          <Link to="/urgencias-hub" className={`mobile-nav-item ${isActive('/urgencias-hub') ? 'active' : ''}`}>
-            <AlertTriangle size={22} />
-            <span>Urgencias</span>
           </Link>
           <Link to="/services" className={`mobile-nav-item ${isActive('/services') ? 'active' : ''}`}>
             <History size={22} />
