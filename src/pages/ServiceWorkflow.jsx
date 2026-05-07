@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Save, CheckCircle2, Box, Zap, Snowflake, Utensils, Droplets, Gauge, ShieldAlert, Activity, Layers, ClipboardCheck, AlertTriangle, X, Minus } from 'lucide-react';
+import { Save, CheckCircle2, Check, Box, Zap, Snowflake, Utensils, Droplets, Gauge, ShieldAlert, Activity, Layers, ClipboardCheck, AlertTriangle, X, Minus } from 'lucide-react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import { useDraftService } from '../hooks/useDraftService';
 import { useServices } from '../hooks/useServices';
 import { useChecklists } from '../hooks/useChecklists';
@@ -22,6 +24,7 @@ const ServiceWorkflow = () => {
     const { checklists, loading: loadingChecklists } = useChecklists();
 
     const [draft, setDraft] = useState(null);
+    const [tamboSpecs, setTamboSpecs] = useState(null);
     const [activeGroup, setActiveGroup] = useState('PRE_SERVICE');
     const [activeChecklistId, setActiveChecklistId] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -37,6 +40,23 @@ const ServiceWorkflow = () => {
         const loadedDraft = getDraftById(serviceId);
         if (loadedDraft) {
             setDraft(loadedDraft);
+            // Cargar specs del tambo si tiene plantilla cargada
+            if (loadedDraft.tamboId) {
+                getDocs(query(collection(db, 'tambo_templates'), where('tamboId', '==', loadedDraft.tamboId)))
+                    .then(snap => {
+                        if (!snap.empty) {
+                            const templateData = snap.docs[0].data();
+                            if (templateData.specs) {
+                                const flat = {};
+                                Object.values(templateData.specs).forEach(sheetData => {
+                                    Object.assign(flat, sheetData);
+                                });
+                                setTamboSpecs(flat);
+                            }
+                        }
+                    })
+                    .catch(err => console.error('[specs] error al cargar template:', err));
+            }
         } else {
             showToast('No se encontró el borrador del service.', 'error');
             navigate('/services-hub');
@@ -182,25 +202,29 @@ const ServiceWorkflow = () => {
     const groupChecklists = checklists.filter(c => c.group === activeGroup);
     const activeSection = groupChecklists.find(c => c.id === activeChecklistId);
 
+    const isSubsectionItem = (item) => {
+        if (typeof item === 'object' && item !== null && item.subsection === true) return true;
+        if (typeof item === 'string') return item.trim().endsWith(':');
+        return false;
+    };
+
     const getProgress = (section) => {
         const stageKey = STAGE_KEYS[section.group];
         const stageData = draft[stageKey]?.data?.sections || {};
         const responses = stageData[section.id] || {};
 
-        const isMaterialStyle = section.group === 'MATERIALS' || section.id === 'materiales' || section.title?.includes('Materiales');
-
         let requiredCount = 0;
         let validResponsesCount = 0;
         section.items.forEach((item, idx) => {
-            const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
+            const isSub = isSubsectionItem(item);
 
             let isCountable = false;
-            if (!isSubsection) {
+            if (!isSub) {
                 isCountable = true;
             } else {
                 const next = section.items[idx + 1];
-                const isNextSubsection = !next || (typeof next === 'string' && (isMaterialStyle || next.trim().endsWith(':')));
-                if (isNextSubsection) isCountable = true;
+                const isNextSub = !next || isSubsectionItem(next);
+                if (isNextSub) isCountable = true;
             }
 
             if (isCountable) {
@@ -315,13 +339,11 @@ const ServiceWorkflow = () => {
                                         {activeSection.title !== 'Materiales en Service' && (
                                             <p>
                                                 {activeSection.items.reduce((acc, item, idx) => {
-                                                    const isMaterialStyle = activeSection.group === 'MATERIALS' || activeSection.id === 'materiales' || activeSection.title?.includes('Materiales');
-                                                    const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
-
-                                                    if (!isSubsection) return acc + 1;
+                                                    const isSub = isSubsectionItem(item);
+                                                    if (!isSub) return acc + 1;
                                                     const next = activeSection.items[idx + 1];
-                                                    const isNextSubsection = !next || (typeof next === 'string' && (isMaterialStyle || next.trim().endsWith(':')));
-                                                    if (isNextSubsection) return acc + 1;
+                                                    const isNextSub = !next || isSubsectionItem(next);
+                                                    if (isNextSub) return acc + 1;
                                                     return acc;
                                                 }, 0)} puntos de verificación
                                             </p>
@@ -331,18 +353,17 @@ const ServiceWorkflow = () => {
                                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px', flexWrap: 'nowrap' }}>
                                     {/* GLOBAL SELECT ALL */}
                                     {activeSection.title !== 'Materiales en Service' && (() => {
-                                        const isMaterialStyle = activeSection.group === 'MATERIALS' || activeSection.id === 'materiales' || activeSection.title?.includes('Materiales');
                                         const responses = draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {};
 
                                         const countableIndices = [];
                                         activeSection.items.forEach((item, idx) => {
-                                            const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
-                                            if (!isSubsection) {
+                                            const isSub = isSubsectionItem(item);
+                                            if (!isSub) {
                                                 countableIndices.push(idx);
                                             } else {
                                                 const next = activeSection.items[idx + 1];
-                                                const isNextSubsection = !next || (typeof next === 'string' && (isMaterialStyle || next.trim().endsWith(':')));
-                                                if (isNextSubsection) countableIndices.push(idx);
+                                                const isNextSub = !next || isSubsectionItem(next);
+                                                if (isNextSub) countableIndices.push(idx);
                                             }
                                         });
 
@@ -394,22 +415,124 @@ const ServiceWorkflow = () => {
                                         title={activeSection.title}
                                         items={activeSection.items}
                                         values={draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {}}
-                                        onChange={(idx, val) => handleStatusChange(activeSection.id, idx, val)}
+                                        onChange={(key, val) => handleBulkStatusChange(activeSection.id, { [key]: val })}
+                                        tamboSpecs={tamboSpecs}
                                     />
                                 ) : (
                                     <Checklist
                                         title={activeSection.title}
                                         items={activeSection.items}
                                         values={draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {}}
-                                        onChange={(idxOrObj, val) => {
-                                            if (typeof idxOrObj === 'object') {
-                                                handleBulkStatusChange(activeSection.id, idxOrObj);
-                                            } else {
-                                                handleStatusChange(activeSection.id, idxOrObj, val);
-                                            }
-                                        }}
+                                        onChange={(key, val) => handleBulkStatusChange(activeSection.id, { [key]: val })}
+                                        tamboSpecs={tamboSpecs}
                                     />
                                 )}
+
+                                {activeSection.id === 'materiales' && (() => {
+                                    const sectionData = draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {};
+                                    const extras = sectionData['_extras'] || [];
+                                    const updateExtras = (updated) => handleBulkStatusChange(activeSection.id, { '_extras': updated });
+                                    return (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                                            {extras.map((extra, i) => (
+                                                <div key={i} className="material-row-refined animate-fade-in extra-item-green">
+                                                    <div className="material-info-part">
+                                                        <div className="icon-badge-centered" style={{ background: '#dcfce7', flexShrink: 0 }}>
+                                                            <Box size={20} className="text-emerald-400" />
+                                                        </div>
+                                                        <input
+                                                            type="text"
+                                                            className="extra-item-text-input"
+                                                            placeholder="Ítem imprevisto..."
+                                                            value={extra.text || ''}
+                                                            onChange={(e) => {
+                                                                const updated = extras.map((ex, j) => j === i ? { ...ex, text: e.target.value } : ex);
+                                                                updateExtras(updated);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="extra-item-right">
+                                                        <div className="qty-control-refined">
+                                                            <div className="qty-display-box">
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    placeholder="0"
+                                                                    className="qty-input"
+                                                                    value={extra.qty || ''}
+                                                                    onChange={(e) => {
+                                                                        const val = parseInt(e.target.value, 10);
+                                                                        const updated = extras.map((ex, j) => j === i ? { ...ex, qty: isNaN(val) ? 0 : Math.max(0, val) } : ex);
+                                                                        updateExtras(updated);
+                                                                    }}
+                                                                />
+                                                                <span className="qty-unit">UNS</span>
+                                                            </div>
+                                                        </div>
+                                                        <button className="extra-delete-btn" onClick={() => updateExtras(extras.filter((_, j) => j !== i))} title="Eliminar">
+                                                            <X size={14} strokeWidth={3} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            <button className="extra-add-btn" onClick={() => updateExtras([...extras, { text: '', qty: 0 }])}>
+                                                + Agregar ítem
+                                            </button>
+                                        </div>
+                                    );
+                                })()}
+
+                                {activeSection.id === 'service_tambo' && (() => {
+                                    const sectionData = draft[STAGE_KEYS[activeGroup]]?.data?.sections[activeSection.id] || {};
+                                    const extras = sectionData['_extras'] || [];
+                                    const updateExtras = (updated) => handleBulkStatusChange(activeSection.id, { '_extras': updated });
+                                    return (
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            {extras.map((extra, i) => (
+                                                <div key={i} className="checklist-item-row animate-fade-in extra-item-green">
+                                                    <div className="row-content-inner">
+                                                        <div className="row-number-pill" style={{ color: '#10b981' }}>+</div>
+                                                        <input
+                                                            type="text"
+                                                            className="extra-item-text-input"
+                                                            placeholder="Ítem imprevisto..."
+                                                            value={extra.text || ''}
+                                                            onChange={(e) => {
+                                                                const updated = extras.map((ex, j) => j === i ? { ...ex, text: e.target.value } : ex);
+                                                                updateExtras(updated);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="extra-item-right">
+                                                        <div className="status-button-group-v2">
+                                                            <button
+                                                                className={`status-btn-compact ok ${extra.status === 'ok' ? 'active' : ''}`}
+                                                                onClick={() => updateExtras(extras.map((ex, j) => j === i ? { ...ex, status: 'ok' } : ex))}
+                                                                title="OK"
+                                                            ><Check size={18} strokeWidth={3} /></button>
+                                                            <button
+                                                                className={`status-btn-compact fail ${extra.status === 'fail' ? 'active' : ''}`}
+                                                                onClick={() => updateExtras(extras.map((ex, j) => j === i ? { ...ex, status: 'fail' } : ex))}
+                                                                title="FALLA"
+                                                            ><X size={18} strokeWidth={3} /></button>
+                                                            <button
+                                                                className={`status-btn-compact na ${extra.status === 'na' ? 'active' : ''}`}
+                                                                onClick={() => updateExtras(extras.map((ex, j) => j === i ? { ...ex, status: 'na' } : ex))}
+                                                                title="N/A"
+                                                            ><Minus size={18} strokeWidth={3} /></button>
+                                                        </div>
+                                                        <button className="extra-delete-btn" onClick={() => updateExtras(extras.filter((_, j) => j !== i))} title="Eliminar">
+                                                            <X size={14} strokeWidth={3} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            <button className="extra-add-btn" style={{ margin: '2px 0 0 0' }} onClick={() => updateExtras([...extras, { text: '', status: null }])}>
+                                                + Agregar ítem
+                                            </button>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         </div>
                     ) : (
@@ -438,6 +561,22 @@ const ServiceWorkflow = () => {
 
             <style>{`
                 .service-execution-refined { max-width: 1000px; margin: 0 auto; padding-bottom: 80px; }
+
+                .extra-item-green { background: #f0fdf4 !important; border-color: #bbf7d0 !important; }
+                .extra-item-green:hover { background: #dcfce7 !important; }
+                .extra-item-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+                .extra-item-text-input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; font-size: 0.95rem; font-weight: 700; color: #334155; padding: 0 8px; }
+                .extra-item-text-input::placeholder { color: #86efac; font-weight: 500; }
+                .extra-add-btn { display: block; width: 100%; padding: 10px; background: #f0fdf4; border: 1.5px dashed #86efac; border-radius: 12px; font-size: 11px; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
+                .extra-add-btn:hover { background: #dcfce7; border-color: #10b981; }
+                .extra-delete-btn { width: 28px; height: 28px; border-radius: 8px; border: none; background: #fee2e2; color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+                .extra-delete-btn:hover { background: #ef4444; color: #fff; }
+                @media (max-width: 1024px) {
+                    .extra-item-right { width: 100%; justify-content: space-between; }
+                    .extra-item-right .qty-control-refined { flex: 1; }
+                    .extra-item-right .status-button-group-v2 { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+                    .extra-item-right .status-btn-compact { width: 100%; height: 44px; }
+                }
                 
                 /* Top Bar */
                 .execution-top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1.5px solid #f2f2f2; padding-bottom: 16px; margin-bottom: 24px; }

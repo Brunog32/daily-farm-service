@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Save, MapPin, Loader2, User, Building2, UploadCloud, FileSpreadsheet, Trash2, CheckCircle2 } from 'lucide-react';
+import { X, Save, MapPin, Loader2, User, Building2, UploadCloud, FileSpreadsheet, Trash2, CheckCircle2, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { doc, getDoc, addDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import ExcelJS from 'exceljs';
@@ -18,6 +18,8 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
     const [template, setTemplate] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [dragActive, setDragActive] = useState(false);
+    const [showSpecs, setShowSpecs] = useState(false);
+    const [openSheets, setOpenSheets] = useState(new Set());
 
     useEffect(() => {
         if (id) {
@@ -57,34 +59,34 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
             const arrayBuffer = await file.arrayBuffer();
             await workbook.xlsx.load(arrayBuffer);
 
-            const worksheet = workbook.getWorksheet(1);
-            const data = [];
+            // Estructura esperada: col B = label, col C = valor, múltiples hojas temáticas
+            const specs = {};
+            let totalFields = 0;
 
-            // Extract headers (first row)
-            const headers = [];
-            worksheet.getRow(1).eachCell((cell) => {
-                headers.push(cell.value);
-            });
-
-            // Extract rows
-            worksheet.eachRow((row, rowNumber) => {
-                if (rowNumber === 1) return;
-                const rowData = {};
-                row.eachCell((cell, colNumber) => {
-                    rowData[headers[colNumber - 1] || `col_${colNumber}`] = cell.value;
+            workbook.eachSheet((worksheet) => {
+                const sheetData = {};
+                worksheet.eachRow((row) => {
+                    const label = row.getCell(2).value;
+                    const value = row.getCell(3).value;
+                    if (label && typeof label === 'string' && label.trim()) {
+                        const cleanLabel = label.trim().replace(/:$/, '');
+                        sheetData[cleanLabel] = value !== null && value !== undefined ? String(value).trim() : '';
+                        totalFields++;
+                    }
                 });
-                data.push(rowData);
+                if (Object.keys(sheetData).length > 0) {
+                    specs[worksheet.name] = sheetData;
+                }
             });
 
             const templateData = {
                 tamboId: id,
                 fileName: file.name,
                 uploadedAt: new Date().toISOString(),
-                rowCount: data.length,
-                data: data // Storing the actual parsed data as requested
+                totalFields,
+                specs,
             };
 
-            // Remove previous template if exists
             if (template?.id) {
                 await deleteDoc(doc(db, 'tambo_templates', template.id));
             }
@@ -224,37 +226,71 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
                     <div className="divider-jm my-4" />
 
                     <div className="template-section">
-                        <div className="flex items-center justify-between mb-3 px-1">
-                            <label className="section-label-jm">Plantilla de Instalaciones</label>
-                            {template && (
-                                <button
-                                    type="button"
-                                    onClick={handleDeleteTemplate}
-                                    className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all transform hover:scale-110"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            )}
-                        </div>
+                        <label className="section-label-jm mb-3 px-1 block">Plantilla de Instalaciones</label>
 
                         {!id ? (
                             <div className="template-alert-box">
                                 <p>Guarda el tambo para habilitar la carga de plantilla</p>
                             </div>
                         ) : template ? (
-                            <div className="template-info-card">
-                                <div className="flex items-center gap-3">
-                                    <div className="template-icon-circle">
-                                        <FileSpreadsheet size={20} className="text-[#10b981]" />
+                            <div>
+                                <div className="template-info-card">
+                                    <div className="template-info-top">
+                                        <FileSpreadsheet size={16} className="template-info-icon" />
+                                        <span className="template-info-date">Planilla cargada el {new Date(template.uploadedAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                                        <button type="button" className="template-delete-btn" onClick={handleDeleteTemplate} title="Eliminar planilla">
+                                            <Trash2 size={13} />
+                                        </button>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="text-[12px] font-bold text-slate-700 truncate">{template.fileName}</div>
-                                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">
-                                            {template.rowCount} registros • {new Date(template.uploadedAt).toLocaleDateString()}
-                                        </div>
-                                    </div>
-                                    <CheckCircle2 size={18} className="text-[#10b981]" />
+
+                                    {template.specs && (
+                                        <button
+                                            type="button"
+                                            className="specs-toggle-btn"
+                                            onClick={() => setShowSpecs(v => !v)}
+                                        >
+                                            <Eye size={13} />
+                                            <span>{showSpecs ? 'Ocultar planilla' : 'Ver planilla'}</span>
+                                            {showSpecs ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                                        </button>
+                                    )}
                                 </div>
+
+                                {showSpecs && template.specs && (
+                                    <div className="specs-viewer">
+                                        {Object.entries(template.specs).map(([sheetName, fields]) => {
+                                            const filledFields = Object.entries(fields).filter(([, v]) => v && String(v).trim());
+                                            if (filledFields.length === 0) return null;
+                                            const isOpen = openSheets.has(sheetName);
+                                            const toggle = () => setOpenSheets(prev => {
+                                                const next = new Set(prev);
+                                                isOpen ? next.delete(sheetName) : next.add(sheetName);
+                                                return next;
+                                            });
+                                            return (
+                                                <div key={sheetName} className="specs-sheet-block">
+                                                    <button type="button" className="specs-sheet-header" onClick={toggle}>
+                                                        <span>{sheetName}</span>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                            <span className="specs-count">{filledFields.length}</span>
+                                                            {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                                        </div>
+                                                    </button>
+                                                    {isOpen && (
+                                                        <div className="specs-fields-list">
+                                                            {filledFields.map(([label, value]) => (
+                                                                <div key={label} className="specs-field-row">
+                                                                    <span className="specs-field-label">{label}</span>
+                                                                    <span className="specs-field-value">{value}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div
@@ -313,7 +349,7 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
                     .input-with-icon-jm input::placeholder { color: #e2e8f0; font-weight: 500; }
                     
                     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex !important; align-items: center; justify-content: center; z-index: 9999; padding: 20px; transition: all 0.3s ease; }
-                    .modal-card-reborn { background: #fff; width: 100%; max-width: 440px; padding: 32px; border-radius: 28px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); border: 1px solid #f8fafc; z-index: 10000; }
+                    .modal-card-reborn { background: #fff; width: 100%; max-width: 440px; padding: 32px; border-radius: 28px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); border: 1px solid #f8fafc; z-index: 10000; overflow-y: auto; max-height: 90vh; -webkit-overflow-scrolling: touch; }
                     
                     @keyframes slideUpFade { from { opacity: 0; transform: translateY(24px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
                     .animate-slide-up { animation: slideUpFade 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
@@ -336,12 +372,30 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
                     
                     .section-label-jm { font-size: 10px; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.12em; display: block; }
 
+                    .specs-toggle-btn { display: flex; align-items: center; gap: 6px; margin-top: 12px; padding: 6px 12px; background: #fff; border: 1.5px solid #dcfce7; border-radius: 10px; font-size: 10px; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; transition: all 0.2s; width: 100%; justify-content: center; }
+                    .specs-toggle-btn:hover { background: #f0fdf4; border-color: #86efac; }
+
+                    .specs-viewer { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+                    .specs-sheet-block { background: #f8fafc; border-radius: 14px; overflow: hidden; border: 1.5px solid #f1f5f9; }
+                    .specs-sheet-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: transparent; border: none; cursor: pointer; font-size: 10px; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 1px; transition: background 0.15s; }
+                    .specs-sheet-header:hover { background: #f1f5f9; }
+                    .specs-count { font-size: 9px; font-weight: 900; color: #10b981; background: #dcfce7; border-radius: 6px; padding: 2px 6px; }
+                    .specs-fields-list { padding: 4px 0 8px 0; }
+                    .specs-field-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 14px; gap: 12px; }
+                    .specs-field-row:not(:last-child) { border-bottom: 1px solid #f1f5f9; }
+                    .specs-field-label { font-size: 10px; font-weight: 700; color: #64748b; flex: 1; min-width: 0; }
+                    .specs-field-value { font-size: 11px; font-weight: 900; color: #111; white-space: nowrap; background: #fefce8; border: 1px solid #fde68a; border-radius: 6px; padding: 1px 6px; }
+
                     .template-section { margin-top: 4px; }
                     .template-alert-box { background: #fffcf0; border: 1.5px dashed #fde68a; border-radius: 18px; padding: 20px; text-align: center; }
                     .template-alert-box p { font-size: 10px; font-weight: 800; color: #b45309; text-transform: uppercase; letter-spacing: 0.05em; }
                     
-                    .template-info-card { background: #f0fdf4; border: 1.5px solid #dcfce7; border-radius: 20px; padding: 16px 20px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.05); }
-                    .template-icon-circle { width: 44px; height: 44px; background: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1); }
+                    .template-info-card { background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 20px; padding: 16px 20px; }
+                    .template-info-top { display: flex; align-items: center; gap: 8px; }
+                    .template-info-icon { color: #10b981; flex-shrink: 0; }
+                    .template-info-date { font-size: 12px; font-weight: 700; color: #166534; flex: 1; }
+                    .template-delete-btn { width: 28px; height: 28px; border-radius: 8px; border: none; background: transparent; color: #86efac; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+                    .template-delete-btn:hover { background: #fee2e2; color: #ef4444; }
                     
                     .template-upload-area { border: 2px dashed #e2e8f0; border-radius: 20px; padding: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #f8fafc50; min-height: 140px; }
                     .template-upload-area:hover { border-color: #5558fa; background: #5558fa05; transform: translateY(-2px); }

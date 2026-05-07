@@ -86,7 +86,6 @@ const Layout = () => {
 
         <nav className="sidebar-nav">
           <NavItem to="/tambos" icon={Factory} label="Establecimientos" />
-          <NavItem to="/checklists" icon={ClipboardList} label="Plantillas" />
           <NavItem to="/services-hub" icon={Play} label="Operaciones" />
           <NavItem to="/services" icon={History} label="Historial" />
           <div className="divider" />
