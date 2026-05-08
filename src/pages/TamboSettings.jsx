@@ -63,14 +63,28 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
             const specs = {};
             let totalFields = 0;
 
+            const getCellText = (cell) => {
+                const v = cell.value;
+                if (v === null || v === undefined) return '';
+                if (typeof v === 'string') return v.trim();
+                if (typeof v === 'number') return String(v);
+                if (typeof v === 'object') {
+                    if (v.richText) return v.richText.map(r => r.text || '').join('').trim();
+                    if (v.text) return String(v.text).trim();
+                    if (v.result !== undefined) return String(v.result).trim();
+                }
+                return String(v).trim();
+            };
+
             workbook.eachSheet((worksheet) => {
                 const sheetData = {};
                 worksheet.eachRow((row) => {
-                    const label = row.getCell(2).value;
-                    const value = row.getCell(3).value;
-                    if (label && typeof label === 'string' && label.trim()) {
-                        const cleanLabel = label.trim().replace(/:$/, '');
-                        sheetData[cleanLabel] = value !== null && value !== undefined ? String(value).trim() : '';
+                    if (row.number === 1) return; // skip header row
+                    const label = getCellText(row.getCell(2));
+                    const value = getCellText(row.getCell(3));
+                    if (label) {
+                        const cleanLabel = label.replace(/:$/, '');
+                        sheetData[cleanLabel] = value;
                         totalFields++;
                     }
                 });
