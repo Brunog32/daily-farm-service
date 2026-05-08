@@ -79,9 +79,10 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
             workbook.eachSheet((worksheet) => {
                 const sheetData = [];
                 worksheet.eachRow((row) => {
-                    if (row.number === 1) return; // skip header row
+                    if (row.number === 1) return;
                     const label = getCellText(row.getCell(2));
                     const value = getCellText(row.getCell(3));
+                    if (value.toUpperCase() === 'DESCRIPCION') return; // skip column header rows
                     if (label) {
                         const cleanLabel = label.replace(/:$/, '');
                         sheetData.push({ label: cleanLabel, value });
