@@ -77,18 +77,18 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
             };
 
             workbook.eachSheet((worksheet) => {
-                const sheetData = {};
+                const sheetData = [];
                 worksheet.eachRow((row) => {
                     if (row.number === 1) return; // skip header row
                     const label = getCellText(row.getCell(2));
                     const value = getCellText(row.getCell(3));
                     if (label) {
                         const cleanLabel = label.replace(/:$/, '');
-                        sheetData[cleanLabel] = value;
+                        sheetData.push({ label: cleanLabel, value });
                         totalFields++;
                     }
                 });
-                if (Object.keys(sheetData).length > 0) {
+                if (sheetData.length > 0) {
                     specs[worksheet.name] = sheetData;
                 }
             });
@@ -273,8 +273,11 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
                                 {showSpecs && template.specs && (
                                     <div className="specs-viewer">
                                         {Object.entries(template.specs).map(([sheetName, fields]) => {
-                                            const filledFields = Object.entries(fields).filter(([, v]) => v && String(v).trim());
-                                            if (filledFields.length === 0) return null;
+                                            // Soporte para formato nuevo (array) y viejo (objeto)
+                                            const entries = Array.isArray(fields)
+                                                ? fields.filter(({ value }) => value && String(value).trim())
+                                                : Object.entries(fields).filter(([, v]) => v && String(v).trim()).map(([label, value]) => ({ label, value }));
+                                            if (entries.length === 0) return null;
                                             const isOpen = openSheets.has(sheetName);
                                             const toggle = () => setOpenSheets(prev => {
                                                 const next = new Set(prev);
@@ -286,13 +289,13 @@ const TamboSettings = ({ id, onClose, onSuccess }) => {
                                                     <button type="button" className="specs-sheet-header" onClick={toggle}>
                                                         <span>{sheetName}</span>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                            <span className="specs-count">{filledFields.length}</span>
+                                                            <span className="specs-count">{entries.length}</span>
                                                             {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                                                         </div>
                                                     </button>
                                                     {isOpen && (
                                                         <div className="specs-fields-list">
-                                                            {filledFields.map(([label, value]) => (
+                                                            {entries.map(({ label, value }) => (
                                                                 <div key={label} className="specs-field-row">
                                                                     <span className="specs-field-label">{label}</span>
                                                                     <span className="specs-field-value">{value}</span>

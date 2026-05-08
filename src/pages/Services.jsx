@@ -58,9 +58,11 @@ const Services = () => {
             if (!templateData.specs) return null;
             const merged = {};
             Object.values(templateData.specs).forEach(sheetData => {
-                Object.entries(sheetData).forEach(([label, value]) => {
-                    merged[label] = value;
-                });
+                if (Array.isArray(sheetData)) {
+                    sheetData.forEach(({ label, value }) => { merged[label] = value; });
+                } else {
+                    Object.assign(merged, sheetData);
+                }
             });
             return merged;
         } catch {

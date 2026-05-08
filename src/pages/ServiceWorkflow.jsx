@@ -49,7 +49,11 @@ const ServiceWorkflow = () => {
                             if (templateData.specs) {
                                 const flat = {};
                                 Object.values(templateData.specs).forEach(sheetData => {
-                                    Object.assign(flat, sheetData);
+                                    if (Array.isArray(sheetData)) {
+                                        sheetData.forEach(({ label, value }) => { flat[label] = value; });
+                                    } else {
+                                        Object.assign(flat, sheetData);
+                                    }
                                 });
                                 setTamboSpecs(flat);
                             }
