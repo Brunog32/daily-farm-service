@@ -16,7 +16,7 @@ import { CHECKLIST_SECTIONS } from '../constants/checklists';
  * @param {String} resolvedOperatorName
  * @returns {Workbook}
  */
-const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOperatorName = null) => {
+const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOperatorName = null, tamboSpecs = null) => {
     const workbook = new ExcelJS.Workbook();
     const summarySheet = workbook.addWorksheet('RESUMEN GENERAL');
 
@@ -70,8 +70,11 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
         const sectionTitle = sectionInfo.title;
         const responses = (serviceData.sections && serviceData.sections[sectionId]) || {};
 
-        // Solo generar hoja si hay respuestas
-        const hasResponses = Object.values(responses).some(val => val !== undefined && val !== null && val !== '');
+        // Solo generar hoja si hay respuestas (incluyendo extras)
+        const hasResponses = Object.entries(responses).some(([key, val]) => {
+            if (key === '_extras') return Array.isArray(val) && val.length > 0;
+            return val !== undefined && val !== null && val !== '';
+        });
         if (!hasResponses) continue;
 
         // Nombre de hoja (Excel manual: max 31 chars, no chars especiales)
@@ -96,15 +99,49 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
         });
 
         // Filas de ítems
+        const isMateriales = sectionId === 'materiales';
+
+        // Resuelve el valor de planilla para ítems dinámicos
+        const resolveSpecValue = (item, textFallback) => {
+            const specKey = typeof item === 'object' && item !== null ? item.specKey : null;
+            if (!specKey) return null;
+            if (tamboSpecs && tamboSpecs[specKey] && String(tamboSpecs[specKey]).trim()) {
+                return String(tamboSpecs[specKey]).trim();
+            }
+            return textFallback || null;
+        };
+
         if (sectionInfo.items) {
             let itemCounter = 0;
             sectionInfo.items.forEach((item, index) => {
                 const label = typeof item === 'string' ? item : item.name;
-                const isMaterialStyle = sectionInfo.group === 'MATERIALS' || sectionId === 'materiales' || sectionTitle.includes('Materiales');
-                const isSubsection = typeof item === 'string' && (isMaterialStyle || item.trim().endsWith(':'));
+                const isDynamic = typeof item === 'object' && item !== null && !!item.specKey;
+                const isSubsection = (typeof item === 'object' && item !== null && item.subsection === true)
+                    || (typeof item === 'string' && item.trim().endsWith(':'));
 
                 if (isSubsection) {
-                    const displayLabel = label.trim().endsWith(':') ? label : `${label.trim()}:`;
+                    const displayLabel = label.trim().endsWith(':') ? label.trim() : `${label.trim()}:`;
+
+                    // Subsección dinámica: tiene status propio (ok/fail/na) — exportar como ítem checkeable
+                    if (isDynamic) {
+                        itemCounter++;
+                        const val = responses[index];
+                        const textVal = responses[`${index}_text`];
+                        const specVal = resolveSpecValue(item, textVal);
+                        const symbol = getStatusSymbol(val);
+                        const fullLabel = specVal ? `${displayLabel.toUpperCase()} [${specVal}]` : displayLabel.toUpperCase();
+                        const dRow = sectionSheet.addRow([itemCounter, fullLabel, symbol.text]);
+                        dRow.getCell(2).font = { bold: true, size: 10 };
+                        dRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+                        dRow.getCell(3).alignment = { horizontal: 'center' };
+                        dRow.getCell(3).font = { bold: true, color: { argb: symbol.color } };
+                        dRow.eachCell(cell => {
+                            cell.border = { bottom: { style: 'thin', color: { argb: 'FFF0F0F0' } } };
+                        });
+                        return;
+                    }
+
+                    // Subsección estática: es un header de sección
                     const subRow = sectionSheet.addRow(['', displayLabel.toUpperCase(), '']);
                     subRow.eachCell(cell => {
                         cell.font = { bold: true, size: 10, color: { argb: 'FF334155' } };
@@ -117,21 +154,18 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
                     });
                     subRow.height = 25;
 
-                    // Lógica UNICA OPCIÓN: Si la sección está vacía, mostramos la fila para que la cabecera no quede colgada
+                    // ÚNICA OPCIÓN: subsección estática sin ítems hijos
                     const nextItem = sectionInfo.items[index + 1];
-                    const isNextSubsection = !nextItem || (typeof nextItem === 'string' && (isMaterialStyle || nextItem.trim().endsWith(':')));
+                    const isNextSubsection = !nextItem
+                        || (typeof nextItem === 'object' && nextItem !== null && nextItem.subsection === true)
+                        || (typeof nextItem === 'string' && nextItem.trim().endsWith(':'));
 
                     if (isNextSubsection) {
-                        let finalVal = responses[index];
-                        if (finalVal === undefined || finalVal === null || finalVal === '') {
-                            finalVal = isMaterialStyle ? '0' : '';
-                        }
-
-                        const symbol = getStatusSymbol(finalVal);
-                        const dRow = sectionSheet.addRow(['!', 'UNICA OPCIÓN', symbol.text]);
-                        const statusCell = dRow.getCell(3);
-                        statusCell.alignment = { horizontal: 'center' };
-                        statusCell.font = { bold: true, color: { argb: symbol.color } };
+                        const val = responses[index];
+                        const symbol = getStatusSymbol(val !== undefined && val !== null && val !== '' ? val : '');
+                        const dRow = sectionSheet.addRow(['!', 'ÚNICA OPCIÓN', symbol.text]);
+                        dRow.getCell(3).alignment = { horizontal: 'center' };
+                        dRow.getCell(3).font = { bold: true, color: { argb: symbol.color } };
                         dRow.eachCell(cell => {
                             cell.border = { bottom: { style: 'thin', color: { argb: 'FFF0F0F0' } } };
                         });
@@ -142,18 +176,49 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
                 itemCounter++;
 
                 const val = responses[index];
+                const textVal = responses[`${index}_text`];
+                const specVal = resolveSpecValue(item, textVal);
                 const symbol = getStatusSymbol(val);
+                const fullLabel = specVal ? `${label} [${specVal}]` : label;
 
-                const dRow = sectionSheet.addRow([itemCounter, label, symbol.text]);
+                const dRow = sectionSheet.addRow([itemCounter, fullLabel, symbol.text]);
 
-                // Estilo especial para la columna de estado
                 const statusCell = dRow.getCell(3);
                 statusCell.alignment = { horizontal: 'center' };
                 statusCell.font = { bold: true, color: { argb: symbol.color } };
 
-                // Bordes suaves
                 dRow.eachCell(cell => {
                     cell.border = { bottom: { style: 'thin', color: { argb: 'FFF0F0F0' } } };
+                });
+            });
+        }
+
+        // Ítems extra agregados por el operador
+        const extras = responses._extras || [];
+        if (extras.length > 0) {
+            const extraHeaderRow = sectionSheet.addRow(['', 'ÍTEMS AGREGADOS EN CAMPO', '']);
+            extraHeaderRow.eachCell(cell => {
+                cell.font = { bold: true, size: 10, color: { argb: 'FF166534' } };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0FDF4' } };
+                cell.alignment = { vertical: 'middle' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FF86EFAC' } },
+                    bottom: { style: 'thin', color: { argb: 'FF86EFAC' } }
+                };
+            });
+            extraHeaderRow.height = 22;
+
+            extras.forEach((extra, i) => {
+                const extraVal = isMateriales
+                    ? (extra.qty != null && extra.qty !== 0 ? String(extra.qty) : '0')
+                    : (extra.status ? getStatusSymbol(extra.status).text : '');
+                const extraColor = isMateriales ? 'FF111111' : getStatusSymbol(extra.status).color;
+                const dRow = sectionSheet.addRow([`+${i + 1}`, extra.text || '', extraVal]);
+                dRow.getCell(3).alignment = { horizontal: 'center' };
+                dRow.getCell(3).font = { bold: true, color: { argb: extraColor } };
+                dRow.getCell(2).font = { italic: true, color: { argb: 'FF166534' } };
+                dRow.eachCell(cell => {
+                    cell.border = { bottom: { style: 'thin', color: { argb: 'FFBBF7D0' } } };
                 });
             });
         }
@@ -174,8 +239,8 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
 /**
  * Genera y descarga directamente un archivo XLSX desde los datos del service.
  */
-export const exportServiceToExcel = async (serviceData, allChecklists = null, resolvedOperatorName = null) => {
-    const workbook = generateServiceWorkbook(serviceData, allChecklists, resolvedOperatorName);
+export const exportServiceToExcel = async (serviceData, allChecklists = null, resolvedOperatorName = null, tamboSpecs = null) => {
+    const workbook = generateServiceWorkbook(serviceData, allChecklists, resolvedOperatorName, tamboSpecs);
 
     // --- DESCARGA / COMPARTIR ---
     const buffer = await workbook.xlsx.writeBuffer();
@@ -222,8 +287,8 @@ export const exportServiceToExcel = async (serviceData, allChecklists = null, re
 /**
  * Genera y codifica en Base64 el archivo Excel para subir a Drive u otra API.
  */
-export const getServiceExcelBase64 = async (serviceData, allChecklists = null, resolvedOperatorName = null) => {
-    const workbook = generateServiceWorkbook(serviceData, allChecklists, resolvedOperatorName);
+export const getServiceExcelBase64 = async (serviceData, allChecklists = null, resolvedOperatorName = null, tamboSpecs = null) => {
+    const workbook = generateServiceWorkbook(serviceData, allChecklists, resolvedOperatorName, tamboSpecs);
     const buffer = await workbook.xlsx.writeBuffer();
 
     // Convert ArrayBuffer to Base64

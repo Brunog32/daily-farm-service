@@ -167,7 +167,7 @@ const ServiceWorkflow = () => {
             // 4. Dejar el proceso de exportar para el final, de forma asíncrona y separada, 
             // ya que algunos celulares bloquean el sistema al descargar
             setTimeout(() => {
-                exportServiceToExcel(serviceRecord, checklists, resolvedName).catch(err => {
+                exportServiceToExcel(serviceRecord, checklists, resolvedName, tamboSpecs).catch(err => {
                     console.log("Exportar archivo en background cancelado o con error:", err);
                 });
             }, 1000);

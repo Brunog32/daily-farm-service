@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useServices } from '../hooks/useServices';
 import { useChecklists } from '../hooks/useChecklists';
 import { exportServiceToExcel, getServiceExcelBase64 } from '../utils/exporter';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
 const Services = () => {
@@ -49,12 +49,32 @@ const Services = () => {
         };
     }, []);
 
+    const loadTamboSpecs = async (tamboId) => {
+        if (!tamboId) return null;
+        try {
+            const snap = await getDocs(query(collection(db, 'tambo_templates'), where('tamboId', '==', tamboId)));
+            if (snap.empty) return null;
+            const templateData = snap.docs[0].data();
+            if (!templateData.specs) return null;
+            const merged = {};
+            Object.values(templateData.specs).forEach(sheetData => {
+                Object.entries(sheetData).forEach(([label, value]) => {
+                    merged[label] = value;
+                });
+            });
+            return merged;
+        } catch {
+            return null;
+        }
+    };
+
     const handleDownload = async (service) => {
         try {
             if (!service) return;
             const userData = usersMap[service.operator?.toLowerCase() || ''];
             const resolvedName = userData ? userData.fullName : service.operator;
-            await exportServiceToExcel(service, checklists, resolvedName);
+            const tamboSpecs = await loadTamboSpecs(service.tamboId);
+            await exportServiceToExcel(service, checklists, resolvedName, tamboSpecs);
         } catch (err) {
             console.error('Error in export:', err);
             alert('Error descargando el archivo Excel.');
@@ -67,9 +87,10 @@ const Services = () => {
             const webAppUrl = 'https://script.google.com/macros/s/AKfycbzUMyDRuVFPIFQ1k4iPNxgpfId7iBaeO37Xnm0aygR-RiDg-ysrOOhH_W91wvKLOLkXHA/exec';
             const userData = usersMap[service.operator?.toLowerCase()];
             const resolvedName = userData ? userData.fullName : service.operator;
+            const tamboSpecs = await loadTamboSpecs(service.tamboId);
 
             setIsUploading(true);
-            const { base64, filename } = await getServiceExcelBase64(service, checklists, resolvedName);
+            const { base64, filename } = await getServiceExcelBase64(service, checklists, resolvedName, tamboSpecs);
 
             const response = await fetch(webAppUrl, {
                 method: 'POST',
