@@ -91,7 +91,7 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
         sectionSheet.addRow([]);
 
         // Cabecera de tabla
-        const hRow = sectionSheet.addRow(['#', 'ÍTEM DE CONTROL / VERIFICACIÓN', 'VALOR PLANILLA', 'ESTADO / VALOR']);
+        const hRow = sectionSheet.addRow(['#', 'ÍTEM DE CONTROL / VERIFICACIÓN', 'ESTADO / VALOR']);
         hRow.eachCell(cell => {
             cell.fill = headerFill;
             cell.font = headerFont;
@@ -129,14 +129,12 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
                         const textVal = responses[`${index}_text`];
                         const specVal = resolveSpecValue(item, textVal);
                         const symbol = getStatusSymbol(val);
-                        const dRow = sectionSheet.addRow([itemCounter, displayLabel.toUpperCase(), specVal || '', symbol.text]);
+                        const fullLabel = specVal ? `${displayLabel.toUpperCase()} ${specVal}` : displayLabel.toUpperCase();
+                        const dRow = sectionSheet.addRow([itemCounter, fullLabel, symbol.text]);
                         dRow.getCell(2).font = { bold: true, size: 10 };
                         dRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
-                        dRow.getCell(3).font = { bold: true, color: { argb: 'FF92400E' } };
-                        dRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEFCE8' } };
                         dRow.getCell(3).alignment = { horizontal: 'center' };
-                        dRow.getCell(4).alignment = { horizontal: 'center' };
-                        dRow.getCell(4).font = { bold: true, color: { argb: symbol.color } };
+                        dRow.getCell(3).font = { bold: true, color: { argb: symbol.color } };
                         dRow.eachCell(cell => {
                             cell.border = { bottom: { style: 'thin', color: { argb: 'FFF0F0F0' } } };
                         });
@@ -144,7 +142,7 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
                     }
 
                     // Subsección estática: es un header de sección
-                    const subRow = sectionSheet.addRow(['', displayLabel.toUpperCase(), '', '']);
+                    const subRow = sectionSheet.addRow(['', displayLabel.toUpperCase(), '']);
                     subRow.eachCell(cell => {
                         cell.font = { bold: true, size: 10, color: { argb: 'FF334155' } };
                         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
@@ -165,9 +163,9 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
                     if (isNextSubsection) {
                         const val = responses[index];
                         const symbol = getStatusSymbol(val !== undefined && val !== null && val !== '' ? val : '');
-                        const dRow = sectionSheet.addRow(['!', 'ÚNICA OPCIÓN', '', symbol.text]);
-                        dRow.getCell(4).alignment = { horizontal: 'center' };
-                        dRow.getCell(4).font = { bold: true, color: { argb: symbol.color } };
+                        const dRow = sectionSheet.addRow(['!', 'ÚNICA OPCIÓN', symbol.text]);
+                        dRow.getCell(3).alignment = { horizontal: 'center' };
+                        dRow.getCell(3).font = { bold: true, color: { argb: symbol.color } };
                         dRow.eachCell(cell => {
                             cell.border = { bottom: { style: 'thin', color: { argb: 'FFF0F0F0' } } };
                         });
@@ -181,16 +179,13 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
                 const textVal = responses[`${index}_text`];
                 const specVal = resolveSpecValue(item, textVal);
                 const symbol = getStatusSymbol(val);
+                const fullLabel = specVal ? `${label} ${specVal}` : label;
 
-                const dRow = sectionSheet.addRow([itemCounter, label, specVal || '', symbol.text]);
+                const dRow = sectionSheet.addRow([itemCounter, fullLabel, symbol.text]);
 
-                if (specVal) {
-                    dRow.getCell(3).font = { bold: true, color: { argb: 'FF92400E' } };
-                    dRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEFCE8' } };
-                    dRow.getCell(3).alignment = { horizontal: 'center' };
-                }
-                dRow.getCell(4).alignment = { horizontal: 'center' };
-                dRow.getCell(4).font = { bold: true, color: { argb: symbol.color } };
+                const statusCell = dRow.getCell(3);
+                statusCell.alignment = { horizontal: 'center' };
+                statusCell.font = { bold: true, color: { argb: symbol.color } };
 
                 dRow.eachCell(cell => {
                     cell.border = { bottom: { style: 'thin', color: { argb: 'FFF0F0F0' } } };
@@ -201,7 +196,7 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
         // Ítems extra agregados por el operador
         const extras = responses._extras || [];
         if (extras.length > 0) {
-            const extraHeaderRow = sectionSheet.addRow(['', 'ÍTEMS AGREGADOS EN CAMPO', '', '']);
+            const extraHeaderRow = sectionSheet.addRow(['', 'ÍTEMS AGREGADOS EN CAMPO', '']);
             extraHeaderRow.eachCell(cell => {
                 cell.font = { bold: true, size: 10, color: { argb: 'FF166534' } };
                 cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0FDF4' } };
@@ -218,9 +213,9 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
                     ? (extra.qty != null && extra.qty !== 0 ? String(extra.qty) : '0')
                     : (extra.status ? getStatusSymbol(extra.status).text : '');
                 const extraColor = isMateriales ? 'FF111111' : getStatusSymbol(extra.status).color;
-                const dRow = sectionSheet.addRow([`+${i + 1}`, extra.text || '', '', extraVal]);
-                dRow.getCell(4).alignment = { horizontal: 'center' };
-                dRow.getCell(4).font = { bold: true, color: { argb: extraColor } };
+                const dRow = sectionSheet.addRow([`+${i + 1}`, extra.text || '', extraVal]);
+                dRow.getCell(3).alignment = { horizontal: 'center' };
+                dRow.getCell(3).font = { bold: true, color: { argb: extraColor } };
                 dRow.getCell(2).font = { italic: true, color: { argb: 'FF166534' } };
                 dRow.eachCell(cell => {
                     cell.border = { bottom: { style: 'thin', color: { argb: 'FFBBF7D0' } } };
@@ -230,9 +225,8 @@ const generateServiceWorkbook = (serviceData, allChecklists = null, resolvedOper
 
         // Configuración de anchos
         sectionSheet.getColumn(1).width = 6;
-        sectionSheet.getColumn(2).width = 55;
-        sectionSheet.getColumn(3).width = 22;
-        sectionSheet.getColumn(4).width = 18;
+        sectionSheet.getColumn(2).width = 65;
+        sectionSheet.getColumn(3).width = 20;
 
         // Agregar entrada en el resumen
         const isDone = Object.keys(responses).length > 0;
